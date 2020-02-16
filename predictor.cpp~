@@ -1,0 +1,6 @@
+#include "predictor.h"
+
+void BayesianHypothesis::AddNewObservation(Observation observation) {
+    // TODO: fill this in.
+    return;
+}

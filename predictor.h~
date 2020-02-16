@@ -1,0 +1,40 @@
+#include <map>
+
+using ObjectId = int;
+
+struct Observation {
+    double t;
+    double s;
+    double v;
+    double a;
+};
+
+class BayesianHypothesis {
+public:
+    void AddNewObservation(Observation observation);
+private:
+
+};
+
+// Two hypotheses - either actor is asserting or yielding to us.
+class MergeHypotheses {
+public:
+    void AddNewObservation(Observation observation) {
+        asserting_hypothesis.AddNewObservation(observation);
+        yielding_hypothesis.AddNewObservation(observation);
+    }
+
+private:
+    BayesianHypothesis asserting_hypothesis;
+    BayesianHypothesis yielding_hypothesis;
+
+};
+
+class Predictor {
+public:
+
+private:
+    // Keep track of actors that have been seen so far.
+    std::map<ObjectId, MergeHypotheses> belief_map;
+
+};
