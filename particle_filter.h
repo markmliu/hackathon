@@ -21,6 +21,7 @@ class ParticleFilter {
 public:
   void Init(const Scene &scene);
   void Update(const Scene &scene);
+  void PrintParticles();
 
 private:
   const int NUM_PARTICLES = 500;

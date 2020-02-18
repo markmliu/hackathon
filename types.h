@@ -12,6 +12,11 @@ enum class VariableType {
 
 using ObjectId = int;
 
+const ObjectId EGO_ID = 1;
+
+// hack to get around boost::optional issue
+const ObjectId NO_OBJECT = -1;
+
 struct NodeId {
   NodeId(ObjectId objectId_, int timestep_, VariableType variableType_);
   ObjectId objectId;
@@ -32,6 +37,11 @@ struct State {
   double s;
   double v;
   double a;
+  // Represents the object that is being "followed".
+  // Preprocessing should only allow:
+  // - The vehicle currently in front of object
+  // - Any vehicle in merging lane
+  ObjectId leadObject;
 };
 struct Scene {
   std::map<ObjectId, State> states;

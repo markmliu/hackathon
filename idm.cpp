@@ -1,4 +1,4 @@
-#include <math>
+#include <math.h>
 
 // Consider tuning.
 const int DELTA = 4;
@@ -19,4 +19,9 @@ double getIDMAccel(double initialVelocity, double distanceToPrecedingAgent,
                                distanceToPrecedingAgent),
                       2);
   return free_road_term + interaction_term;
+}
+
+double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
+                           double maxAccel) {
+  return maxAccel * pow(1 - (initialVelocity / desiredVelocity), DELTA);
 }

@@ -10,9 +10,10 @@
 
 // particles can be on desired time headway
 
-// delta
-
 double getIDMAccel(double initialVelocity, double distanceToPrecedingAgent,
                    double precedingAgentVelocity, double desiredVelocity,
                    double desiredTimeHeadway, double comfortableBrakingDecel,
-                   double maxAccel, double delta, double minimumSpacing);
+                   double maxAccel, double minimumSpacing);
+
+double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
+                           double maxAccel);
