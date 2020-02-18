@@ -18,3 +18,7 @@ void ParticleFilter::Init(const Scene &scene) {
     particles_.push_back(particle);
   }
 }
+
+void ParticleFilter::Update(const Scene &scene) {
+  // Predict particles forward.
+}

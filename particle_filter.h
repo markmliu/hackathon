@@ -20,6 +20,7 @@ class ParticleFilter {
   // This approximates our new X-bar.
 public:
   void Init(const Scene &scene);
+  void Update(const Scene &scene);
 
 private:
   const int NUM_PARTICLES = 500;
@@ -29,4 +30,5 @@ private:
   const int AccStdDev_ = 2; // m/s2
 
   std::vector<Scene> particles_;
+  int current_timestep_;
 };
