@@ -19,17 +19,19 @@ class ParticleFilter {
   // - draw with replacement from x-bar.
   // This approximates our new X-bar.
 public:
+  ParticleFilter(int numParticles);
   void Init(const Scene &scene);
   void Update(const Scene &scene);
   void PrintParticles();
+  std::pair<Scene, Scene> GetMeanScenes() const;
 
 private:
-  const int NUM_PARTICLES = 500;
   std::default_random_engine generator_;
   const int PosStdDev_ = 2; // m
   const int VelStdDev_ = 2; // m/s
   const int AccStdDev_ = 2; // m/s2
 
+  int numParticles_;
   std::vector<Scene> particles_;
   int current_timestep_;
 };

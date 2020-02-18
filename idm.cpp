@@ -31,7 +31,7 @@ double getMinAccelInFrontOfEgoAtConflictRegion(
     double egoDistanceToConflictPoint, double egoVelocity) {
   double egoTimeToConflict = egoDistanceToConflictPoint / egoVelocity;
   // Pad by some amount to beat ego.
-  double actorTimeToConflict = egoTimeToConflict - 1;
+  double actorTimeToConflict = egoTimeToConflict - 0.5;
   return 2 * (actorDistanceToConflictPoint -
               (actorVelocity * actorTimeToConflict)) /
          (actorTimeToConflict * actorTimeToConflict);
@@ -43,7 +43,7 @@ double getMaxAccelBehindEgoAtConflictRegion(double actorDistanceToConflictPoint,
                                             double egoVelocity) {
   double egoTimeToConflict = egoDistanceToConflictPoint / egoVelocity;
   // Pad by some amount to follow ego.
-  double actorTimeToConflict = egoTimeToConflict + 1;
+  double actorTimeToConflict = egoTimeToConflict + 0.5;
   return 2 * (actorDistanceToConflictPoint -
               (actorVelocity * actorTimeToConflict)) /
          (actorTimeToConflict * actorTimeToConflict);

@@ -31,6 +31,7 @@ struct Node {
   std::vector<NodeId> children;
 };
 
+// Represents a predicted state.
 struct State {
   State(double s_, double v_, double a_) : s(s_), v(v_), a(a_) {}
   // s should be in absolute frame
@@ -42,7 +43,9 @@ struct State {
   // - The vehicle currently in front of object
   // - Any vehicle in merging lane
   ObjectId leadObject;
+  ObjectId rearObject;
 };
 struct Scene {
   std::map<ObjectId, State> states;
+  void print();
 };
