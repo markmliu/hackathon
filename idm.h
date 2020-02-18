@@ -10,6 +10,8 @@
 
 // particles can be on desired time headway
 
+// Should only be applied to a vehicle in same lane in front of target object
+// Won't use this for v1 since we will only assume one merging vehicle.
 double getIDMAccel(double initialVelocity, double distanceToPrecedingAgent,
                    double precedingAgentVelocity, double desiredVelocity,
                    double desiredTimeHeadway, double comfortableBrakingDecel,
@@ -17,3 +19,25 @@ double getIDMAccel(double initialVelocity, double distanceToPrecedingAgent,
 
 double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
                            double maxAccel);
+
+// These two methods should be extended to multiple actors
+// Use some placeholder stuff here which can be replaced with more accurate
+// heuristics.
+// Assumptions:
+// Actor perfectly knows ego velocity
+// Actor assumes ego will maintain constant velocity.
+// By critical point, actor wants to:
+// - be at ego vehicle vel
+// - ego vehicle in front/behind plus some safe buffer
+// -
+// Actor wants to match velocity by critical point, with
+// TODO: account for vehicle length
+
+double getMinAccelInFrontOfEgoAtConflictRegion(
+    double actorDistanceToConflictPoint, double actorVelocity,
+    double egoDistanceToConflictPoint, double egoVelocity);
+
+double getMaxAccelBehindEgoAtConflictRegion(double actorDistanceToConflictPoint,
+                                            double actorVelocity,
+                                            double egoDistanceToConflictPoint,
+                                            double egoVelocity);

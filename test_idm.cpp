@@ -22,6 +22,7 @@ int main() {
 
   // Things to test -
   // Initial position near/in front of ego slows to behind us
+  // not going to use this for conflict region.
   {
     // Same speed
     double desiredVelocity = 70;
@@ -43,6 +44,25 @@ int main() {
                     precedingAgentVelocity, desiredVelocity, desiredTimeHeadway,
                     comfortableBrakingDecel, maxAccel, minimumSpacing);
     std::cout << accel << std::endl;
+  }
+
+  // Test getMinAccelInFrontOfEgoAtConflictRegion()
+  {
+    double actorDistanceToConflictPoint = 100;
+    double egoDistanceToConflictPoint = 100;
+    double actorVelocity = 40;
+    double egoVelocity = 40;
+
+    double passingAccel = getMinAccelInFrontOfEgoAtConflictRegion(
+        actorDistanceToConflictPoint, actorVelocity, egoDistanceToConflictPoint,
+        egoVelocity);
+
+    double yieldingAccel = getMaxAccelBehindEgoAtConflictRegion(
+        actorDistanceToConflictPoint, actorVelocity, egoDistanceToConflictPoint,
+        egoVelocity);
+
+    std::cout << "passing accel: " << passingAccel << std::endl;
+    std::cout << "yielding accel: " << yieldingAccel << std::endl;
   }
   return 0;
 }

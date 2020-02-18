@@ -25,3 +25,26 @@ double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
                            double maxAccel) {
   return maxAccel * pow(1 - (initialVelocity / desiredVelocity), DELTA);
 }
+
+double getMinAccelInFrontOfEgoAtConflictRegion(
+    double actorDistanceToConflictPoint, double actorVelocity,
+    double egoDistanceToConflictPoint, double egoVelocity) {
+  double egoTimeToConflict = egoDistanceToConflictPoint / egoVelocity;
+  // Pad by some amount to beat ego.
+  double actorTimeToConflict = egoTimeToConflict - 1;
+  return 2 * (actorDistanceToConflictPoint -
+              (actorVelocity * actorTimeToConflict)) /
+         (actorTimeToConflict * actorTimeToConflict);
+}
+
+double getMaxAccelBehindEgoAtConflictRegion(double actorDistanceToConflictPoint,
+                                            double actorVelocity,
+                                            double egoDistanceToConflictPoint,
+                                            double egoVelocity) {
+  double egoTimeToConflict = egoDistanceToConflictPoint / egoVelocity;
+  // Pad by some amount to follow ego.
+  double actorTimeToConflict = egoTimeToConflict + 1;
+  return 2 * (actorDistanceToConflictPoint -
+              (actorVelocity * actorTimeToConflict)) /
+         (actorTimeToConflict * actorTimeToConflict);
+}
