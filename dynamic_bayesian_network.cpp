@@ -2,16 +2,6 @@
 
 #include <iostream>
 
-NodeId::NodeId(ObjectId objectId_, int timestep_, VariableType variableType_)
-    : objectId(objectId_), timestep(timestep_), variableType(variableType_) {}
-
-Node::Node(NodeId id_) : id(id_) {}
-
-bool operator<(const NodeId &lhs, const NodeId &rhs) {
-  return std::tie(lhs.timestep, lhs.objectId, lhs.variableType) <
-         std::tie(rhs.timestep, rhs.objectId, rhs.variableType);
-}
-
 void DynamicBayesianNetwork::AddNode(NodeId nodeId) {
   auto ret = nodes_.emplace(nodeId, Node(nodeId));
   if (!ret.second) {
@@ -49,5 +39,11 @@ void DBNPredictor::UpdateScene(const Scene &scene) {
   for (const auto objectState : scene.states) {
     AddActor(objectState.first);
   }
+  // Update probabilities
+  // We get a new observation z.
+  // 1) x | z     Estimate true state given observation
+  // 2) m | x     Estimate maneuver given state
+  // 3) a | m,x   Estimate action given maneuver and state
+  // 4) x'| x,a   Estimate new true state given actions from prev timestep
   current_timestep_++;
 }
