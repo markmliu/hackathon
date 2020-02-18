@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <vector>
 
 #include "types.h"
 
@@ -22,6 +23,10 @@ public:
 
 private:
   const int NUM_PARTICLES = 500;
-  std::default_random_engine generator;
-  const int MeasurentStdDev = 2; // m
+  std::default_random_engine generator_;
+  const int PosStdDev_ = 2; // m
+  const int VelStdDev_ = 2; // m/s
+  const int AccStdDev_ = 2; // m/s2
+
+  std::vector<Scene> particles_;
 };
