@@ -146,31 +146,24 @@ void ParticleFilter::Update(const Scene &scene) {
   // First step: predict particles forward only using model assumptions, without
   // looking at the observation..
 
-  // To reduce computation burden, compute mean kinematic state of all agents
-  // for each maneuver intention.
-  std::vector<State> maneuverMeanStates = GetMeanStates();
-
   // ---------------Sample agent acceleration--------
   // Absolute max/min's which will be further bounded by maneuver intentions.
   const double maxVehicleAccel = 5.0;
   const double minVehicleAccel = -5.0;
 
-  for (int maneuver = 0; maneuver < Maneuver::NUM_MANEUVERS; ++maneuver) {
-    auto &state = maneuverMeanStates[maneuver];
+  for (int i = 0; i < numParticles_; ++i) {
+    auto &state = particles_[i].states.begin()->second;
+
     double maxAccel = maxVehicleAccel;
     double minAccel = minVehicleAccel;
-    ApplyManeuverSpecificAccelConstraints((Maneuver)maneuver, state,
-                                          scene.egoState, scene.criticalPointS,
-                                          &maxAccel, &minAccel);
+    ApplyManeuverSpecificAccelConstraints(state.m, state, scene.egoState,
+                                          scene.criticalPointS, &maxAccel,
+                                          &minAccel);
     double accelSamplingMean =
         std::min((maxAccel + minAccel) / 2, maxAccel - accelSamplingStdDev);
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
-    std::cout << "for maneuver: " << maneuver << ", min accel is " << minAccel
-              << " and max accel is " << maxAccel << std::endl;
-    std::cout << "sampled accel: " << sampledAccel << " from mean "
-              << accelSamplingMean << std::endl;
     ApplyAccel(sampledAccel, dt, &state);
     state.print();
   }
@@ -181,18 +174,36 @@ void ParticleFilter::Update(const Scene &scene) {
   std::cout << "observed scene: " << std::endl;
   scene.print();
 
-  std::vector<double> weights(Maneuver::NUM_MANEUVERS);
+  std::vector<double> weights(numParticles_);
   {
     double total = 0.0;
-    for (int maneuver = 0; maneuver < Maneuver::NUM_MANEUVERS; ++maneuver) {
-      weights[maneuver] =
-          RelativeLikelihood(observedState, maneuverMeanStates[maneuver]);
-      total += weights[maneuver];
+    for (int i = 0; i < numParticles_; ++i) {
+      weights[i] = RelativeLikelihood(observedState,
+                                      particles_[i].states.begin()->second);
+      total += weights[i];
     }
-    for (int maneuver = 0; maneuver < Maneuver::NUM_MANEUVERS; ++maneuver) {
-      weights[maneuver] /= total;
-      std::cout << "likelihood of maneuver: " << maneuver << ": "
-                << weights[maneuver] << std::endl;
+
+    std::vector<double> maneuverProbs(Maneuver::NUM_MANEUVERS);
+    for (int i = 0; i < numParticles_; ++i) {
+      weights[i] /= total;
     }
+  }
+
+  // Resample
+  std::vector<Scene> particlesResampled;
+  particlesResampled.reserve(numParticles_);
+  std::discrete_distribution<int> weightedSampler(weights.begin(),
+                                                  weights.end());
+  std::vector<int> maneuverCounter(Maneuver::NUM_MANEUVERS);
+  for (int i = 0; i < numParticles_; ++i) {
+    particlesResampled.push_back(particles_[weightedSampler(generator_)]);
+    Maneuver m = particlesResampled[i].states.begin()->second.m;
+    maneuverCounter[m]++;
+  }
+
+  // Show new maneuver likelihoods
+  for (int i = 0; i < Maneuver::NUM_MANEUVERS; ++i) {
+    std::cout << "maneuver : " << i << " has num particles "
+              << maneuverCounter[i] << std::endl;
   }
 }
