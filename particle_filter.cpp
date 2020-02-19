@@ -31,8 +31,10 @@ GetYieldingBeatingMeanStates(const std::vector<Scene> &particles) {
   assert(particles[0].states.size() != 0);
   ObjectId objectId = particles[0].states.begin()->first;
 
-  Scene yieldingMeanScene;
-  Scene beatingMeanScene;
+  // egoState should be the same across all particles
+  Scene yieldingMeanScene(particles[0].egoState);
+  Scene beatingMeanScene(particles[0].egoState);
+
   yieldingMeanScene.states.emplace(objectId, State(0, 0, 0));
   beatingMeanScene.states.emplace(objectId, State(0, 0, 0));
 
@@ -89,8 +91,9 @@ double ParticleFilter::RelativeLikelihood(State observation,
 
 void ParticleFilter::Init(const Scene &scene) {
   // Each particle represents a version of true values for all actors.
+  current_timestamp_ = scene.timestamp;
   for (int i = 0; i < numParticles_; ++i) {
-    Scene particle;
+    Scene particle(scene.egoState);
     for (const auto &objectState : scene.states) {
       // kinematic
       std::normal_distribution<double> posDistribution(
@@ -129,6 +132,8 @@ void ParticleFilter::PrintParticles() {
 void ParticleFilter::Update(const Scene &scene) {
   // Assume we're stepping forward by dt.
   const double dt = 0.5;
+  assert(scene.timestamp == current_timestamp_ + dt);
+  current_timestamp_ = scene.timestamp;
 
   // std dev used when sampling accel.
   const double accelSamplingStdDev = 1.0;

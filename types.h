@@ -46,8 +46,10 @@ struct State {
   ObjectId rearObject;
 };
 struct Scene {
+  Scene(State egoState_);
   std::map<ObjectId, State> states;
   State egoState;
   double criticalPointS;
+  double timestamp;
   void print() const;
 };
