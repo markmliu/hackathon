@@ -47,5 +47,8 @@ struct State {
 };
 struct Scene {
   std::map<ObjectId, State> states;
+  // relative to ego vehicle.
+  double distToCriticalPoint;
+  double egoVelocity;
   void print();
 };

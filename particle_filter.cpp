@@ -1,4 +1,5 @@
 #include "particle_filter.h"
+#include "idm.h"
 
 #include <assert.h>
 #include <iostream>
@@ -59,6 +60,14 @@ GetYieldingBeatingMeanStates(const std::vector<Scene> &particles) {
   }
   return std::make_pair(yieldingMeanScene, beatingMeanScene);
 }
+
+// Updates s to dt seconds later, assuming constant accel.
+// Ignores a in s, replaces it with accel.
+void ApplyAccel(double accel, double dt, State *state) {
+  state->s += (state->v * dt) + (.5 * accel * dt * dt);
+  state->v += accel * dt;
+  state->a = accel;
+}
 } // anonymous namespace
 
 ParticleFilter::ParticleFilter(int numParticles)
@@ -108,6 +117,11 @@ void ParticleFilter::PrintParticles() {
 }
 
 void ParticleFilter::Update(const Scene &scene) {
+  // Assume we're stepping forward by dt.
+  const double dt = 0.5;
+
+  // std dev used when sampling accel.
+  const double accelSamplingStdDev = 1.0;
   // First step: predict particles forward only using model assumptions, without
   // looking at the observation..
 
@@ -115,15 +129,53 @@ void ParticleFilter::Update(const Scene &scene) {
   // for each maneuver intention.
   // For now, this means just compute min kinematic state of agent if yielding
   // vs beating.
-  std::pair<Scene, Scene> yielding_beating_states =
+  std::pair<Scene, Scene> yieldingBeatingScenes =
       GetYieldingBeatingMeanStates(particles_);
 
+  // ---------------Sample agent acceleration--------
   // Absolute max/min's which will be further bounded by maneuver intentions.
   const double maxVehicleAccel = 10.0;
   const double minVehicleAccel = -5.0;
 
-  const double dt = 0.5;
+  auto &yieldingScene = yieldingBeatingScenes.first;
+  auto &beatingScene = yieldingBeatingScenes.second;
 
-  double softMaxAccel = maxVehicleAccel;
-  double softMinAccel = minVehicleAccel;
+  auto &yieldingState = yieldingScene.states.begin()->second;
+
+  // Do yielding scene first.
+  {
+    double maxAccelYielding = maxVehicleAccel;
+    double minAccelYielding = minVehicleAccel;
+    maxAccelYielding =
+        std::min(maxAccelYielding,
+                 getMaxAccelBehindEgoAtConflictRegion(
+                     /*actorDistanceToConflictPoint=*/yieldingState.s +
+                         scene.distToCriticalPoint,
+                     /*actorVelocity=*/yieldingState.v,
+                     /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
+                     /*egoVelocity=*/scene.egoVelocity));
+
+    // Paper says to sample from gaussian centered at maxAccel - stdDev, but
+    // want to make sure that mean is always
+    // at least higher than that for yielding.
+    double accelSamplingMean =
+        std::max((maxAccelYielding + minAccelYielding) / 2,
+                 maxAccelYielding - accelSamplingStdDev);
+    std::normal_distribution<double> accDistribution(
+        /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
+    double sampledAccel = accDistribution(generator_);
+    ApplyAccel(sampledAccel, dt, &yieldingState);
+  }
+
+  // Now beating scene
+  double maxAccelBeating = maxVehicleAccel;
+  double minAccelBeating = minVehicleAccel;
+  minAccelBeating =
+      std::max(minAccelBeating,
+               getMinAccelInFrontOfEgoAtConflictRegion(
+                   /*actorDistanceToConflictPoint=*/yieldingState.s +
+                       scene.distToCriticalPoint,
+                   /*actorVelocity=*/yieldingState.v,
+                   /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
+                   /*egoVelocity=*/scene.egoVelocity));
 }
