@@ -153,10 +153,10 @@ void ParticleFilter::Update(const Scene &scene) {
                      /*egoVelocity=*/scene.egoVelocity));
 
     // Paper says to sample from gaussian centered at maxAccel - stdDev, but
-    // want to make sure that mean is always
-    // at least higher than that for yielding.
+    // want to make sure that mean is always less than that for beating
+    //
     double accelSamplingMean =
-        std::max((maxAccelYielding + minAccelYielding) / 2,
+        std::min((maxAccelYielding + minAccelYielding) / 2,
                  maxAccelYielding - accelSamplingStdDev);
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
@@ -166,17 +166,25 @@ void ParticleFilter::Update(const Scene &scene) {
 
   // Now beating scene
   {
-      auto &beatingScene = yieldingBeatingScenes.second;
-      auto &beatingState = beatingScene.states.begin()->second;
-      double maxAccelBeating = maxVehicleAccel;
-      double minAccelBeating = minVehicleAccel;
-      minAccelBeating =
-          std::max(minAccelBeating,
-                   getMinAccelInFrontOfEgoAtConflictRegion(
-                       /*actorDistanceToConflictPoint=*/beatingState.s +
-                       scene.distToCriticalPoint,
-                       /*actorVelocity=*/beatingState.v,
-                       /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
-                       /*egoVelocity=*/scene.egoVelocity));
+    auto &beatingScene = yieldingBeatingScenes.second;
+    auto &beatingState = beatingScene.states.begin()->second;
+    double maxAccelBeating = maxVehicleAccel;
+    double minAccelBeating = minVehicleAccel;
+    minAccelBeating =
+        std::max(minAccelBeating,
+                 getMinAccelInFrontOfEgoAtConflictRegion(
+                     /*actorDistanceToConflictPoint=*/beatingState.s +
+                         scene.distToCriticalPoint,
+                     /*actorVelocity=*/beatingState.v,
+                     /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
+                     /*egoVelocity=*/scene.egoVelocity));
+    // Paper says to sample from gaussian centered at maxAccel - stdDev, but
+    // want to make sure that mean is always higher than that for yielding.
+    double accelSamplingMean = std::max((maxAccelBeating + minAccelBeating) / 2,
+                                        maxAccelBeating - accelSamplingStdDev);
+    std::normal_distribution<double> accDistribution(
+        /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
+    double sampledAccel = accDistribution(generator_);
+    ApplyAccel(sampledAccel, dt, &beatingState);
   }
 }
