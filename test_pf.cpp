@@ -1,4 +1,5 @@
 #include "kinematics.h"
+#include "matplotlibcpp.h"
 #include "particle_filter.h"
 
 #include <iostream>
@@ -17,6 +18,8 @@ int main() {
   scene.timestamp = 1.0;
 
   pf.Init(scene);
+  auto particles = pf.GetParticles();
+  // what do our particles look like?
   {
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we

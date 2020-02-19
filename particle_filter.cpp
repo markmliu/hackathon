@@ -6,10 +6,7 @@
 
 namespace {
 
-// Only two types of scenes for now -
-// actor is yielding to ego
-// actor is beating ego
-// Return the kinematic means for each situation
+// Return the kinematic means for each maneuver.
 std::vector<State> GetManeuverMeanStates(const std::vector<Scene> &particles,
                                          int numManeuvers) {
 
@@ -95,6 +92,8 @@ double ParticleFilter::RelativeLikelihood(State observation,
          pdf_gaussian(observation.v, expectation.v, VelStdDev_) *
          pdf_gaussian(observation.a, expectation.a, AccStdDev_);
 }
+
+std::vector<Scene> ParticleFilter::GetParticles() const { return particles_; }
 
 void ParticleFilter::Init(const Scene &scene) {
   // Each particle represents a version of true values for all actors.
@@ -206,4 +205,6 @@ void ParticleFilter::Update(const Scene &scene) {
     std::cout << "maneuver : " << i << " has num particles "
               << maneuverCounter[i] << std::endl;
   }
+
+  particles_ = particlesResampled;
 }

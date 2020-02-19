@@ -22,6 +22,7 @@ public:
   ParticleFilter(int numParticles);
   void Init(const Scene &scene);
   void Update(const Scene &scene);
+  std::vector<Scene> GetParticles() const;
   void PrintParticles();
   // exposed for testing.
   std::vector<State> GetMeanStates() const;
