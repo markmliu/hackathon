@@ -8,22 +8,15 @@ const int NUM_PARTICLES = 500;
 int main() {
   ParticleFilter pf(NUM_PARTICLES);
   Scene scene(State(/*s=*/0,
-                    /*v=*/30,
+                    /*v=*/20,
                     /*a=*/0));
   scene.states.emplace(/*objectId=*/123, State(/*s=*/0,
-                                               /*v=*/30,
+                                               /*v=*/20,
                                                /*a=*/0));
   scene.criticalPointS = 200;
   scene.timestamp = 1.0;
 
   pf.Init(scene);
-  // std::pair<Scene, Scene> yieldingBeatingScenes = pf.GetMeanScenes();
-  // std::cout << "yielding scene: " << std::endl;
-  // yieldingBeatingScenes.first.print();
-
-  // std::cout << "beating scene: " << std::endl;
-  // yieldingBeatingScenes.second.print();
-
   {
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we

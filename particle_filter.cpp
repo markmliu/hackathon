@@ -142,13 +142,12 @@ void ParticleFilter::Update(const Scene &scene) {
 
   // std dev used when sampling accel.
   const double accelSamplingStdDev = 1.0;
+
   // First step: predict particles forward only using model assumptions, without
   // looking at the observation..
 
   // To reduce computation burden, compute mean kinematic state of all agents
   // for each maneuver intention.
-  // For now, this means just compute min kinematic state of agent if yielding
-  // vs beating.
   std::vector<State> maneuverMeanStates = GetMeanStates();
 
   // ---------------Sample agent acceleration--------
