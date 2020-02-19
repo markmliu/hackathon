@@ -40,7 +40,6 @@ GetYieldingBeatingMeanStates(const std::vector<Scene> &particles) {
     const auto &state = particle.states.at(objectId);
     if (state.leadObject == EGO_ID) {
       // yielding
-      std::cout << "updating yielding particle" << std::endl;
       numYieldingScenesSoFar++;
       int n = numYieldingScenesSoFar;
       auto &yieldingState = yieldingMeanScene.states.at(objectId);
@@ -49,7 +48,6 @@ GetYieldingBeatingMeanStates(const std::vector<Scene> &particles) {
       yieldingState.a += (state.a - yieldingState.a) / n;
     } else {
       // beating
-      std::cout << "updating beating particle" << std::endl;
       numBeatingScenesSoFar++;
       int n = numBeatingScenesSoFar;
       auto &beatingState = beatingMeanScene.states.at(objectId);
@@ -162,6 +160,8 @@ void ParticleFilter::Update(const Scene &scene) {
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
     ApplyAccel(sampledAccel, dt, &yieldingState);
+    std::cout << "yielding scene: " << std::endl;
+    yieldingScene.print();
   }
 
   // Now beating scene
@@ -186,5 +186,9 @@ void ParticleFilter::Update(const Scene &scene) {
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
     ApplyAccel(sampledAccel, dt, &beatingState);
+    std::cout << "beating scene: " << std::endl;
+    beatingScene.print();
   }
+
+  //
 }

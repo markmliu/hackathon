@@ -10,6 +10,8 @@ int main() {
   scene.states.emplace(/*objectId=*/123, State(/*s=*/-5,
                                                /*v=*/10,
                                                /*a=*/0));
+  scene.distToCriticalPoint = 100;
+  scene.egoVelocity = 30;
   pf.Init(scene);
   std::pair<Scene, Scene> yieldingBeatingScenes = pf.GetMeanScenes();
   std::cout << "yielding scene: " << std::endl;
@@ -18,5 +20,16 @@ int main() {
   std::cout << "beating scene: " << std::endl;
   yieldingBeatingScenes.second.print();
 
-  // pf.PrintParticles();
+  {
+    // Let's evolve the scene at a dt of 0.5
+    // Assume the actor is in same relative position, but we
+    // are 15m closer to the critical point.
+    Scene scene;
+    scene.states.emplace(/*objectId=*/123, State(/*s=*/-5,
+                                                 /*v=*/10,
+                                                 /*a=*/0));
+    scene.distToCriticalPoint = 85;
+    scene.egoVelocity = 30;
+    pf.Update(scene);
+  }
 }
