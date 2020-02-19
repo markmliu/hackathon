@@ -19,4 +19,8 @@ void Scene::print() const {
     std::cout << "v: " << objectState.second.v << std::endl;
     std::cout << "a: " << objectState.second.a << std::endl;
   }
+  std::cout << "ego state: " << std::endl;
+  std::cout << "s: " << egoState.s << std::endl;
+  std::cout << "v: " << egoState.v << std::endl;
+  std::cout << "a: " << egoState.a << std::endl;
 }

@@ -34,7 +34,7 @@ struct Node {
 // Represents a predicted state.
 struct State {
   State(double s_, double v_, double a_) : s(s_), v(v_), a(a_) {}
-  // s should be in absolute frame
+  // s should be in aabsolute frame
   double s;
   double v;
   double a;
@@ -47,8 +47,7 @@ struct State {
 };
 struct Scene {
   std::map<ObjectId, State> states;
-  // relative to ego vehicle.
-  double distToCriticalPoint;
-  double egoVelocity;
+  State egoState;
+  double criticalPointS;
   void print() const;
 };

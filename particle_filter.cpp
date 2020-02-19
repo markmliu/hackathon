@@ -144,7 +144,7 @@ void ParticleFilter::Update(const Scene &scene) {
 
   // ---------------Sample agent acceleration--------
   // Absolute max/min's which will be further bounded by maneuver intentions.
-  const double maxVehicleAccel = 10.0;
+  const double maxVehicleAccel = 5.0;
   const double minVehicleAccel = -5.0;
 
   auto &yieldingScene = yieldingBeatingScenes.first;
@@ -156,11 +156,12 @@ void ParticleFilter::Update(const Scene &scene) {
     maxAccelYielding =
         std::min(maxAccelYielding,
                  getMaxAccelBehindEgoAtConflictRegion(
-                     /*actorDistanceToConflictPoint=*/yieldingState.s +
-                         scene.distToCriticalPoint,
+                     /*actorDistanceToConflictPoint=*/scene.criticalPointS -
+                         yieldingState.s,
                      /*actorVelocity=*/yieldingState.v,
-                     /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
-                     /*egoVelocity=*/scene.egoVelocity));
+                     /*egoDistanceToConflictPoint=*/scene.criticalPointS -
+                         scene.egoState.s,
+                     /*egoVelocity=*/scene.egoState.v));
 
     // Paper says to sample from gaussian centered at maxAccel - stdDev, but
     // want to make sure that mean is always less than that for beating
@@ -171,6 +172,10 @@ void ParticleFilter::Update(const Scene &scene) {
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
+    std::cout << "if yielding, min accel is " << minAccelYielding
+              << " and max accel is " << maxAccelYielding << std::endl;
+    std::cout << "sampled accel: " << sampledAccel << " from mean "
+              << accelSamplingMean << std::endl;
     ApplyAccel(sampledAccel, dt, &yieldingState);
     std::cout << "yielding scene: " << std::endl;
     yieldingScene.print();
@@ -186,11 +191,12 @@ void ParticleFilter::Update(const Scene &scene) {
     minAccelBeating =
         std::max(minAccelBeating,
                  getMinAccelInFrontOfEgoAtConflictRegion(
-                     /*actorDistanceToConflictPoint=*/beatingState.s +
-                         scene.distToCriticalPoint,
+                     /*actorDistanceToConflictPoint=*/scene.criticalPointS -
+                         beatingState.s,
                      /*actorVelocity=*/beatingState.v,
-                     /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
-                     /*egoVelocity=*/scene.egoVelocity));
+                     /*egoDistanceToConflictPoint=*/scene.criticalPointS -
+                         scene.egoState.s,
+                     /*egoVelocity=*/scene.egoState.v));
     // Paper says to sample from gaussian centered at maxAccel - stdDev, but
     // want to make sure that mean is always higher than that for yielding.
     double accelSamplingMean = std::max((maxAccelBeating + minAccelBeating) / 2,
@@ -198,6 +204,10 @@ void ParticleFilter::Update(const Scene &scene) {
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
+    std::cout << "if beating, min accel is " << minAccelBeating
+              << " and max accel is " << maxAccelBeating << std::endl;
+    std::cout << "sampled accel: " << sampledAccel << " from mean "
+              << accelSamplingMean << std::endl;
     ApplyAccel(sampledAccel, dt, &beatingState);
     std::cout << "beating scene: " << std::endl;
     beatingScene.print();

@@ -7,11 +7,14 @@ const int NUM_PARTICLES = 500;
 int main() {
   ParticleFilter pf(NUM_PARTICLES);
   Scene scene;
-  scene.states.emplace(/*objectId=*/123, State(/*s=*/-5,
-                                               /*v=*/10,
+  scene.states.emplace(/*objectId=*/123, State(/*s=*/0,
+                                               /*v=*/30,
                                                /*a=*/0));
-  scene.distToCriticalPoint = 100;
-  scene.egoVelocity = 30;
+  scene.egoState = State(/*s=*/0,
+                         /*v=*/30,
+                         /*a=*/0);
+  scene.criticalPointS = 100;
+
   pf.Init(scene);
   std::pair<Scene, Scene> yieldingBeatingScenes = pf.GetMeanScenes();
   std::cout << "yielding scene: " << std::endl;
@@ -25,8 +28,8 @@ int main() {
     // Assume the actor is in same relative position, but we
     // are 15m closer to the critical point.
     Scene scene;
-    scene.states.emplace(/*objectId=*/123, State(/*s=*/-5,
-                                                 /*v=*/10,
+    scene.states.emplace(/*objectId=*/123, State(/*s=*/0,
+                                                 /*v=*/30,
                                                  /*a=*/0));
     scene.distToCriticalPoint = 85;
     scene.egoVelocity = 30;
