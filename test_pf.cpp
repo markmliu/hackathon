@@ -13,7 +13,7 @@ int main() {
   scene.states.emplace(/*objectId=*/123, State(/*s=*/0,
                                                /*v=*/30,
                                                /*a=*/0));
-  scene.criticalPointS = 100;
+  scene.criticalPointS = 200;
   scene.timestamp = 1.0;
 
   pf.Init(scene);

@@ -24,7 +24,7 @@ public:
   void Update(const Scene &scene);
   void PrintParticles();
   // exposed for testing.
-  std::pair<Scene, Scene> GetMeanScenes() const;
+  std::vector<State> GetMeanStates() const;
 
 private:
   double RelativeLikelihood(State observation, State expectation) const;

@@ -2,16 +2,6 @@
 
 #include <iostream>
 
-NodeId::NodeId(ObjectId objectId_, int timestep_, VariableType variableType_)
-    : objectId(objectId_), timestep(timestep_), variableType(variableType_) {}
-
-Node::Node(NodeId id_) : id(id_) {}
-
-bool operator<(const NodeId &lhs, const NodeId &rhs) {
-  return std::tie(lhs.timestep, lhs.objectId, lhs.variableType) <
-         std::tie(rhs.timestep, rhs.objectId, rhs.variableType);
-}
-
 Scene::Scene(State egoState_) : egoState(egoState_) {}
 
 void Scene::print() const {
@@ -25,4 +15,8 @@ void Scene::print() const {
   std::cout << "s: " << egoState.s << std::endl;
   std::cout << "v: " << egoState.v << std::endl;
   std::cout << "a: " << egoState.a << std::endl;
+}
+
+void State::print() const {
+  std::cout << "s: " << s << " v: " << v << " a: " << a << std::endl;
 }

@@ -3,33 +3,16 @@
 #include <map>
 #include <vector>
 
-enum class VariableType {
-  Z = 0, // Observation
-  X = 1, // Actual state
-  M = 2, // Maneuver (assert or yield)
-  A = 3, // Action (trajectory)
+enum Maneuver {
+  YIELDING = 0,
+  BEATING = 1,
+  IGNORING = 2,
+  NUM_MANEUVERS = 3,
 };
 
 using ObjectId = int;
 
 const ObjectId EGO_ID = 1;
-
-// hack to get around boost::optional issue
-const ObjectId NO_OBJECT = -1;
-
-struct NodeId {
-  NodeId(ObjectId objectId_, int timestep_, VariableType variableType_);
-  ObjectId objectId;
-  int timestep;
-  VariableType variableType;
-};
-bool operator<(const NodeId &lhs, const NodeId &rhs);
-struct Node {
-  Node(NodeId id_);
-  // Redundantly stored for convenience
-  NodeId id;
-  std::vector<NodeId> children;
-};
 
 // Represents a predicted state.
 struct State {
@@ -38,12 +21,8 @@ struct State {
   double s;
   double v;
   double a;
-  // Represents the object that is being "followed".
-  // Preprocessing should only allow:
-  // - The vehicle currently in front of object
-  // - Any vehicle in merging lane
-  ObjectId leadObject;
-  ObjectId rearObject;
+  Maneuver m;
+  void print() const;
 };
 struct Scene {
   Scene(State egoState_);
