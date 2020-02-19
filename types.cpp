@@ -12,7 +12,7 @@ bool operator<(const NodeId &lhs, const NodeId &rhs) {
          std::tie(rhs.timestep, rhs.objectId, rhs.variableType);
 }
 
-void Scene::print() {
+void Scene::print() const {
   for (const auto &objectState : states) {
     std::cout << "object id: " << objectState.first << std::endl;
     std::cout << "s: " << objectState.second.s << std::endl;

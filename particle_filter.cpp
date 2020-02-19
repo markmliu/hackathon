@@ -66,6 +66,11 @@ void ApplyAccel(double accel, double dt, State *state) {
   state->v += accel * dt;
   state->a = accel;
 }
+
+double pdf_gaussian(double x, double m, double s) {
+  return (1 / (s * sqrt(2 * M_PI))) * exp(-0.5 * pow((x - m) / s, 2.0));
+}
+
 } // anonymous namespace
 
 ParticleFilter::ParticleFilter(int numParticles)
@@ -73,6 +78,13 @@ ParticleFilter::ParticleFilter(int numParticles)
 
 std::pair<Scene, Scene> ParticleFilter::GetMeanScenes() const {
   return GetYieldingBeatingMeanStates(particles_);
+}
+
+double ParticleFilter::RelativeLikelihood(State observation,
+                                          State expectation) const {
+  return pdf_gaussian(observation.s, expectation.s, PosStdDev_) *
+         pdf_gaussian(observation.v, expectation.v, VelStdDev_) *
+         pdf_gaussian(observation.a, expectation.a, AccStdDev_);
 }
 
 void ParticleFilter::Init(const Scene &scene) {
@@ -135,10 +147,10 @@ void ParticleFilter::Update(const Scene &scene) {
   const double maxVehicleAccel = 10.0;
   const double minVehicleAccel = -5.0;
 
+  auto &yieldingScene = yieldingBeatingScenes.first;
+  auto &yieldingState = yieldingScene.states.begin()->second;
   // Do yielding scene first.
   {
-    auto &yieldingScene = yieldingBeatingScenes.first;
-    auto &yieldingState = yieldingScene.states.begin()->second;
     double maxAccelYielding = maxVehicleAccel;
     double minAccelYielding = minVehicleAccel;
     maxAccelYielding =
@@ -165,9 +177,10 @@ void ParticleFilter::Update(const Scene &scene) {
   }
 
   // Now beating scene
+  auto &beatingScene = yieldingBeatingScenes.second;
+  auto &beatingState = beatingScene.states.begin()->second;
+
   {
-    auto &beatingScene = yieldingBeatingScenes.second;
-    auto &beatingState = beatingScene.states.begin()->second;
     double maxAccelBeating = maxVehicleAccel;
     double minAccelBeating = minVehicleAccel;
     minAccelBeating =
@@ -190,5 +203,21 @@ void ParticleFilter::Update(const Scene &scene) {
     beatingScene.print();
   }
 
-  //
+  // Update weights - what's likelihood of seeing actual observation in either
+  // case.
+  const auto &observedState = scene.states.begin()->second;
+  std::cout << "observed scene: " << std::endl;
+  scene.print();
+
+  double yieldingWeight = RelativeLikelihood(observedState, yieldingState);
+  double beatingWeight = RelativeLikelihood(observedState, beatingState);
+
+  // normalize.
+  {
+    double total = yieldingWeight + beatingWeight;
+    yieldingWeight /= total;
+    beatingWeight /= total;
+  }
+  std::cout << "likelihood of yielding: " << yieldingWeight << std::endl;
+  std::cout << "likelihood of beating: " << beatingWeight << std::endl;
 }

@@ -50,5 +50,5 @@ struct Scene {
   // relative to ego vehicle.
   double distToCriticalPoint;
   double egoVelocity;
-  void print();
+  void print() const;
 };

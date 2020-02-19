@@ -23,9 +23,11 @@ public:
   void Init(const Scene &scene);
   void Update(const Scene &scene);
   void PrintParticles();
+  // exposed for testing.
   std::pair<Scene, Scene> GetMeanScenes() const;
 
 private:
+  double RelativeLikelihood(State observation, State expectation) const;
   std::default_random_engine generator_;
   const int PosStdDev_ = 2; // m
   const int VelStdDev_ = 2; // m/s
