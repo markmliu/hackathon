@@ -137,13 +137,10 @@ void ParticleFilter::Update(const Scene &scene) {
   const double maxVehicleAccel = 10.0;
   const double minVehicleAccel = -5.0;
 
-  auto &yieldingScene = yieldingBeatingScenes.first;
-  auto &beatingScene = yieldingBeatingScenes.second;
-
-  auto &yieldingState = yieldingScene.states.begin()->second;
-
   // Do yielding scene first.
   {
+    auto &yieldingScene = yieldingBeatingScenes.first;
+    auto &yieldingState = yieldingScene.states.begin()->second;
     double maxAccelYielding = maxVehicleAccel;
     double minAccelYielding = minVehicleAccel;
     maxAccelYielding =
@@ -168,14 +165,18 @@ void ParticleFilter::Update(const Scene &scene) {
   }
 
   // Now beating scene
-  double maxAccelBeating = maxVehicleAccel;
-  double minAccelBeating = minVehicleAccel;
-  minAccelBeating =
-      std::max(minAccelBeating,
-               getMinAccelInFrontOfEgoAtConflictRegion(
-                   /*actorDistanceToConflictPoint=*/yieldingState.s +
+  {
+      auto &beatingScene = yieldingBeatingScenes.second;
+      auto &beatingState = beatingScene.states.begin()->second;
+      double maxAccelBeating = maxVehicleAccel;
+      double minAccelBeating = minVehicleAccel;
+      minAccelBeating =
+          std::max(minAccelBeating,
+                   getMinAccelInFrontOfEgoAtConflictRegion(
+                       /*actorDistanceToConflictPoint=*/beatingState.s +
                        scene.distToCriticalPoint,
-                   /*actorVelocity=*/yieldingState.v,
-                   /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
-                   /*egoVelocity=*/scene.egoVelocity));
+                       /*actorVelocity=*/beatingState.v,
+                       /*egoDistanceToConflictPoint=*/scene.distToCriticalPoint,
+                       /*egoVelocity=*/scene.egoVelocity));
+  }
 }
