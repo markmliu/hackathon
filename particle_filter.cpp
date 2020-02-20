@@ -133,7 +133,7 @@ void ParticleFilter::PrintParticles() {
   }
 }
 
-void ParticleFilter::Update(const Scene &scene) {
+std::vector<Scene> ParticleFilter::Update(const Scene &scene) {
   // Assume we're stepping forward by dt.
   const double dt = 0.5;
   assert(scene.timestamp == current_timestamp_ + dt);
@@ -164,7 +164,6 @@ void ParticleFilter::Update(const Scene &scene) {
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
     ApplyAccel(sampledAccel, dt, &state);
-    // state.print();
   }
 
   // Update weights - what's likelihood of seeing actual observation in either
@@ -206,5 +205,6 @@ void ParticleFilter::Update(const Scene &scene) {
               << maneuverCounter[i] << std::endl;
   }
 
-  particles_ = particlesResampled;
+  std::swap(particles_, particlesResampled);
+  return particlesResampled;
 }

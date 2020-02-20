@@ -10,7 +10,7 @@ namespace plt = matplotlibcpp;
 const int NUM_PARTICLES = 500;
 
 void PlotParticles(const std::vector<Scene> &particles,
-                   const std::string &title) {
+                   const State &observation, const std::string &title) {
   // we only care about the object state for each particle.
   std::vector<State> particleStates;
   std::transform(
@@ -29,19 +29,26 @@ void PlotParticles(const std::vector<Scene> &particles,
   }
   plt::xlabel("travel");
   plt::ylabel("velocity");
-  // build color string
+
   plt::scatter(s[0], v[0], /*markerSize=*/3.0, options[0]);
   plt::scatter(s[1], v[1], /*markerSize=*/3.0, options[1]);
   plt::scatter(s[2], v[2], /*markerSize=*/3.0, options[2]);
+  // Observation
+  plt::scatter(std::vector<double>({observation.s}),
+               std::vector<double>({observation.v}), /*markerSize=*/20.0);
   plt::title(title);
 }
 
 void PlotBeforeAfter(const std::vector<Scene> &before,
-                     const std::vector<Scene> &after) {
+                     const std::vector<Scene> &expected,
+                     const std::vector<Scene> &resampled,
+                     const State &observation) {
   plt::subplot(2, 2, 1);
-  PlotParticles(before, "before");
+  PlotParticles(before, observation, "before");
   plt::subplot(2, 2, 2);
-  PlotParticles(after, "after");
+  PlotParticles(expected, observation, "expected");
+  plt::subplot(2, 2, 3);
+  PlotParticles(resampled, observation, "resampled");
   plt::show();
 }
 
@@ -69,8 +76,9 @@ int main() {
     EvolveState(dt, &updatedScene.states.at(123));
     updatedScene.timestamp = 1.5;
 
-    pf.Update(updatedScene);
+    auto expected = pf.Update(updatedScene);
+    auto resampled = pf.GetParticles();
+    State &observation = updatedScene.states.begin()->second;
+    PlotBeforeAfter(before, expected, resampled, observation);
   }
-  auto after = pf.GetParticles();
-  PlotBeforeAfter(before, after);
 }
