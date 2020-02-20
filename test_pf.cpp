@@ -32,9 +32,11 @@ int main() {
     // are 15m closer to the critical point.
     double dt = 0.5;
     Scene updatedScene = scene;
+
+    Strategy objectStrategy = Strategy::MAX_ACCEL_LATE;
+    // Strategy objectStrategy =Strategy::ACCEL_THEN_DECEL_LATE
     EvolveScene(dt, &updatedScene,
-                /*egoStrategy=*/Strategy::CONSTANT_ACCEL,
-                /*objectStrategy=*/Strategy::MAX_ACCEL_LATE);
+                /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 
     UpdateInfo info = pf.Update(updatedScene);
     auto resampled = pf.GetParticles();

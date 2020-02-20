@@ -21,6 +21,17 @@ void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
     state->a = accelToApply;
     std::cout << "acceling up to " << state->a << std::endl;
     return;
+  } else if (strategy == Strategy::ACCEL_THEN_DECEL_LATE) {
+    double accelToApply;
+    if (currentTimestamp < 3.0) {
+      accelToApply = 2.0;
+    } else if (currentTimestamp < 5.5) {
+      accelToApply = 0;
+    } else {
+      accelToApply = -2.0;
+    }
+    state->a = accelToApply;
+    return;
   }
 }
 } // anonymous namespace

@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <iostream>
 
+const double maxVehicleAccel = 3.0;
+const double minVehicleAccel = 3.0;
+
 namespace {
 
 // Return the kinematic means for each maneuver.
@@ -50,6 +53,9 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*actorVelocity=*/objectState.v,
             /*egoDistanceToConflictPoint=*/criticalPointS - egoState.s,
             /*egoVelocity=*/egoState.v));
+    *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
+                                                        /*desiredVel=*/30,
+                                                        maxVehicleAccel));
   }
   if (maneuver == Maneuver::BEATING) {
     *minAccel = std::max(
@@ -61,10 +67,9 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*egoVelocity=*/egoState.v));
   }
   if (maneuver == Maneuver::IGNORING) {
-    *maxAccel =
-        std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
-                                                /*desiredVel=*/30,
-                                                /*vehicleMaxAccel=*/5.0));
+    *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
+                                                        /*desiredVel=*/30,
+                                                        maxVehicleAccel));
   }
 }
 
@@ -130,13 +135,10 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
   // looking at the observation..
 
   // ---------------Sample agent acceleration--------
-  // Absolute max/min's which will be further bounded by maneuver intentions.
-  const double maxVehicleAccel = 5.0;
-  const double minVehicleAccel = -5.0;
-
   for (int i = 0; i < numParticles_; ++i) {
     auto &state = particles_[i].states.begin()->second;
 
+    // Vehicle max/min's which will be further bounded by maneuver intentions.
     double maxAccel = maxVehicleAccel;
     double minAccel = minVehicleAccel;
     ApplyManeuverSpecificAccelConstraints(state.m, state, scene.egoState,

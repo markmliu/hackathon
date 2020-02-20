@@ -4,8 +4,11 @@
 enum Strategy {
   // Constant acceleration
   CONSTANT_ACCEL = 0,
-  // No accel, then max accel pretty late.
+  // Fixed accel, then max accel pretty late.
   MAX_ACCEL_LATE = 1,
+
+  // Fixed accel, then small neg decel late
+  ACCEL_THEN_DECEL_LATE = 2,
 };
 
 void EvolveState(double dt, State *state);
