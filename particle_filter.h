@@ -35,6 +35,8 @@ public:
 
 private:
   double RelativeLikelihood(State observation, State expectation) const;
+  // Used sparingly during update to prevent particle deprivation.
+  Scene SampleFromCurrentMeasurementDistribution(const Scene &observation);
   std::default_random_engine generator_;
   const int PosStdDev_ = 2; // m
   const int VelStdDev_ = 2; // m/s

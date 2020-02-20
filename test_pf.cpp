@@ -68,24 +68,14 @@ void PlotTrajectories(const TrajectoriesForPlotting &trajectories) {
 
 void PlotManeuverProbabilities(
     const ManeuverProbabilitiesForPlotting &maneuverProbabilities) {
-  for (const auto &probString : maneuverProbabilities.probabilities) {
-    for (const auto el : probString) {
-      std::cout << el << ",";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << "timestamps: " << std::endl;
-  for (const auto el : maneuverProbabilities.timestamps) {
-    std::cout << el << "," << std::endl;
-  }
   plt::xlabel("time");
   plt::ylabel("probability");
   plt::named_plot("yielding", maneuverProbabilities.timestamps,
-                  maneuverProbabilities.probabilities[0]);
+                  maneuverProbabilities.probabilities[0], "r--");
   plt::named_plot("beating", maneuverProbabilities.timestamps,
-                  maneuverProbabilities.probabilities[1]);
+                  maneuverProbabilities.probabilities[1], "g--");
   plt::named_plot("ignoring", maneuverProbabilities.timestamps,
-                  maneuverProbabilities.probabilities[2]);
+                  maneuverProbabilities.probabilities[2], "k--");
   plt::legend();
 }
 
@@ -112,7 +102,8 @@ int main() {
   Scene scene(State(/*s=*/0,
                     /*v=*/20,
                     /*a=*/0));
-  scene.states.emplace(/*objectId=*/123, State(/*s=*/0,
+
+  scene.states.emplace(/*objectId=*/123, State(/*s=*/-20,
                                                /*v=*/20,
                                                /*a=*/0));
   scene.criticalPointS = 200;
@@ -134,9 +125,7 @@ int main() {
     // are 15m closer to the critical point.
     double dt = 0.5;
     Scene updatedScene = scene;
-    EvolveState(dt, &updatedScene.egoState);
-    EvolveState(dt, &updatedScene.states.at(123));
-    updatedScene.timestamp = scene.timestamp + dt;
+    EvolveScene(dt, &updatedScene);
 
     UpdateInfo info = pf.Update(updatedScene);
     auto resampled = pf.GetParticles();

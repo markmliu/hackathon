@@ -99,26 +99,7 @@ void ParticleFilter::Init(const Scene &scene) {
   // Each particle represents a version of true values for all actors.
   current_timestamp_ = scene.timestamp;
   for (int i = 0; i < numParticles_; ++i) {
-    Scene particle(scene.egoState);
-    for (const auto &objectState : scene.states) {
-      // kinematic
-      std::normal_distribution<double> posDistribution(
-          /*mean=*/objectState.second.s, /*stdDev=*/PosStdDev_);
-      std::normal_distribution<double> velDistribution(
-          /*mean=*/objectState.second.v, /*stdDev=*/VelStdDev_);
-      std::normal_distribution<double> accDistribution(
-          /*mean=*/objectState.second.a, /*stdDev=*/AccStdDev_);
-      State state(posDistribution(generator_), velDistribution(generator_),
-                  accDistribution(generator_));
-
-      // maneuver intention
-      std::discrete_distribution<int> maneuverDistribution{1, 1, 1};
-      int maneuver = maneuverDistribution(generator_);
-      state.m = Maneuver(maneuver);
-
-      particle.states.emplace(objectState.first, state);
-    }
-    particles_.push_back(particle);
+    particles_.push_back(SampleFromCurrentMeasurementDistribution(scene));
   }
 }
 
@@ -171,7 +152,6 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
   // Update weights - what's likelihood of seeing actual observation in either
   // case.
   const auto &observedState = scene.states.begin()->second;
-  std::cout << "observed scene: " << std::endl;
   scene.print();
 
   std::vector<double> weights(numParticles_);
@@ -194,9 +174,19 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
   particlesResampled.reserve(numParticles_);
   std::discrete_distribution<int> weightedSampler(weights.begin(),
                                                   weights.end());
+  std::uniform_real_distribution<double> uniform(0.0, 1.0);
+
   std::vector<int> maneuverCounter(Maneuver::NUM_MANEUVERS);
   for (int i = 0; i < numParticles_; ++i) {
-    particlesResampled.push_back(particles_[weightedSampler(generator_)]);
+    // with some small probability, resample from environment
+    // rather than from updated particles to prevent
+    // particle deprivation.
+    if (uniform(generator_) < 0.05) {
+      particlesResampled.push_back(
+          SampleFromCurrentMeasurementDistribution(scene));
+    } else {
+      particlesResampled.push_back(particles_[weightedSampler(generator_)]);
+    }
     Maneuver m = particlesResampled[i].states.begin()->second.m;
     maneuverCounter[m]++;
   }
@@ -211,4 +201,27 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
   }
 
   return info;
+}
+
+Scene ParticleFilter::SampleFromCurrentMeasurementDistribution(
+    const Scene &observation) {
+  Scene particle(observation.egoState);
+  for (const auto &objectState : observation.states) {
+    // kinematic
+    std::normal_distribution<double> posDistribution(
+        /*mean=*/objectState.second.s, /*stdDev=*/PosStdDev_);
+    std::normal_distribution<double> velDistribution(
+        /*mean=*/objectState.second.v, /*stdDev=*/VelStdDev_);
+    std::normal_distribution<double> accDistribution(
+        /*mean=*/objectState.second.a, /*stdDev=*/AccStdDev_);
+    State state(posDistribution(generator_), velDistribution(generator_),
+                accDistribution(generator_));
+
+    // maneuver intention
+    std::discrete_distribution<int> maneuverDistribution{1, 1, 1};
+    int maneuver = maneuverDistribution(generator_);
+    state.m = Maneuver(maneuver);
+    particle.states.emplace(objectState.first, state);
+  }
+  return particle;
 }
