@@ -78,3 +78,12 @@ void PlotInfo(const std::vector<Scene> &before,
   PlotManeuverProbabilities(maneuverProbabilities);
   plt::show();
 }
+
+TrajectoriesForPlotting::TrajectoriesForPlotting(double criticalPointS_)
+    : criticalPointS(criticalPointS_) {}
+
+void TrajectoriesForPlotting::update(const Scene &scene) {
+  egoTravels.push_back(scene.egoState.s);
+  objectTravels.push_back(scene.states.begin()->second.s);
+  timestamps.push_back(scene.timestamp);
+}

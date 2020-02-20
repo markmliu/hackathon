@@ -5,10 +5,12 @@
 #include "types.h"
 
 struct TrajectoriesForPlotting {
+  TrajectoriesForPlotting(double criticalPointS_);
   std::vector<double> egoTravels;
   std::vector<double> objectTravels;
   std::vector<double> timestamps;
   double criticalPointS;
+  void update(const Scene &scene);
 };
 
 struct ManeuverProbabilitiesForPlotting {
