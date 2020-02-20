@@ -28,8 +28,8 @@ std::vector<State> GetManeuverMeanStates(const std::vector<Scene> &particles,
         (state.s - meanManeuverStates[maneuver].s) / n;
     meanManeuverStates[maneuver].v +=
         (state.v - meanManeuverStates[maneuver].v) / n;
-    meanManeuverStates[maneuver].a +=
-        (state.a - meanManeuverStates[maneuver].a) / n;
+    // meanManeuverStates[maneuver].a +=
+    //     (state.a - meanManeuverStates[maneuver].a) / n;
   }
   return meanManeuverStates;
 }
@@ -39,6 +39,9 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
                                            const State &egoState,
                                            double criticalPointS,
                                            double *maxAccel, double *minAccel) {
+  // TODO: if object/ego are past the critical point, model is currently
+  // incorrect
+
   if (maneuver == Maneuver::YIELDING) {
     *maxAccel = std::min(
         *maxAccel,
@@ -89,8 +92,7 @@ std::vector<State> ParticleFilter::GetMeanStates() const {
 double ParticleFilter::RelativeLikelihood(State observation,
                                           State expectation) const {
   return pdf_gaussian(observation.s, expectation.s, PosStdDev_) *
-         pdf_gaussian(observation.v, expectation.v, VelStdDev_) *
-         pdf_gaussian(observation.a, expectation.a, AccStdDev_);
+         pdf_gaussian(observation.v, expectation.v, VelStdDev_);
 }
 
 std::vector<Scene> ParticleFilter::GetParticles() const { return particles_; }
@@ -108,8 +110,7 @@ void ParticleFilter::PrintParticles() {
     for (const auto &objectState : particles_[i].states) {
       std::cout << "particle " << i << " object id: " << objectState.first
                 << " s: " << objectState.second.s
-                << " v: " << objectState.second.v
-                << " a: " << objectState.second.a << std::endl;
+                << " v: " << objectState.second.v << std::endl;
     }
   }
 }
@@ -163,6 +164,7 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
       total += weights[i];
     }
 
+    // normalize
     std::vector<double> maneuverProbs(Maneuver::NUM_MANEUVERS);
     for (int i = 0; i < numParticles_; ++i) {
       weights[i] /= total;
@@ -212,10 +214,9 @@ Scene ParticleFilter::SampleFromCurrentMeasurementDistribution(
         /*mean=*/objectState.second.s, /*stdDev=*/PosStdDev_);
     std::normal_distribution<double> velDistribution(
         /*mean=*/objectState.second.v, /*stdDev=*/VelStdDev_);
-    std::normal_distribution<double> accDistribution(
-        /*mean=*/objectState.second.a, /*stdDev=*/AccStdDev_);
+    // do not allow particle filter access to acceleration state
     State state(posDistribution(generator_), velDistribution(generator_),
-                accDistribution(generator_));
+                /*a=*/0);
 
     // maneuver intention
     std::discrete_distribution<int> maneuverDistribution{1, 1, 1};

@@ -10,7 +10,7 @@ void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
   } else if (strategy == Strategy::MAX_ACCEL_LATE) {
     // constant time for now
     const double LATE_TIME = 5.0;
-    const double MAX_ACCEL = 5.0;
+    const double MAX_ACCEL = 3.0;
     const double MAX_SPEED = 35;
 
     if (currentTimestamp < LATE_TIME) {
