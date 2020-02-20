@@ -3,28 +3,45 @@
 #include "particle_filter.h"
 
 #include <iostream>
+#include <unordered_map>
 
 namespace plt = matplotlibcpp;
 
 const int NUM_PARTICLES = 500;
 
-void PlotParticles(std::vector<Scene> &particles) {
+void PlotParticles(const std::vector<Scene> &particles,
+                   const std::string &title) {
   // we only care about the object state for each particle.
   std::vector<State> particleStates;
   std::transform(
       particles.begin(), particles.end(), std::back_inserter(particleStates),
       [](const Scene &scene) { return scene.states.begin()->second; });
   // Plot the s,v for each state.
-  std::vector<double> s(particleStates.size());
-  std::vector<double> v(particleStates.size());
+  std::vector<std::vector<double>> s(Maneuver::NUM_MANEUVERS);
+  std::vector<std::vector<double>> v(Maneuver::NUM_MANEUVERS);
+  std::vector<std::unordered_map<std::string, std::string>> options = {
+      {{"color", "red"}}, {{"color", "green"}}, {{"color", "black"}}};
 
   for (int i = 0; i < particleStates.size(); i++) {
-    s[i] = particleStates[i].s;
-    v[i] = particleStates[i].v;
+    int m = particleStates[i].m;
+    s[m].push_back(particleStates[i].s);
+    v[m].push_back(particleStates[i].v);
   }
   plt::xlabel("travel");
   plt::ylabel("velocity");
-  plt::scatter(s, v);
+  // build color string
+  plt::scatter(s[0], v[0], /*markerSize=*/3.0, options[0]);
+  plt::scatter(s[1], v[1], /*markerSize=*/3.0, options[1]);
+  plt::scatter(s[2], v[2], /*markerSize=*/3.0, options[2]);
+  plt::title(title);
+}
+
+void PlotBeforeAfter(const std::vector<Scene> &before,
+                     const std::vector<Scene> &after) {
+  plt::subplot(2, 2, 1);
+  PlotParticles(before, "before");
+  plt::subplot(2, 2, 2);
+  PlotParticles(after, "after");
   plt::show();
 }
 
@@ -40,9 +57,8 @@ int main() {
   scene.timestamp = 1.0;
 
   pf.Init(scene);
-  auto particles = pf.GetParticles();
+  auto before = pf.GetParticles();
   // what do our particles look like?
-  PlotParticles(particles);
   {
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we
@@ -55,4 +71,6 @@ int main() {
 
     pf.Update(updatedScene);
   }
+  auto after = pf.GetParticles();
+  PlotBeforeAfter(before, after);
 }

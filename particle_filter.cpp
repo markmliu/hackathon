@@ -164,7 +164,7 @@ void ParticleFilter::Update(const Scene &scene) {
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
     ApplyAccel(sampledAccel, dt, &state);
-    state.print();
+    // state.print();
   }
 
   // Update weights - what's likelihood of seeing actual observation in either
