@@ -2,17 +2,27 @@
 #include "particle_filter.h"
 #include "plotting.h"
 
-#include <string.h>
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <unordered_map>
 
 const int NUM_PARTICLES = 5000;
 
 int main(int argc, char *argv[]) {
-  bool saveToFile = argc != 1 && strcmp(argv[1], "save") == 0;
+  // See if we need to save info out
+  bool saveToFile = argc >= 4;
+  std::string particlesFileName;
+  std::string trajectoriesFileName;
+  std::string maneuverProbsFileName;
   if (saveToFile) {
-      std::cout << "todo: save to file!" << std::endl;
+    particlesFileName = argv[1];
+    trajectoriesFileName = argv[2];
+    maneuverProbsFileName = argv[3];
+    std::cout << "todo: save to file!" << std::endl;
   }
+  ParticlesByTimestep particlesByTimestep;
+
   ParticleFilter pf(NUM_PARTICLES);
   Scene scene(State(/*s=*/0,
                     /*v=*/20,
@@ -39,7 +49,7 @@ int main(int argc, char *argv[]) {
     Scene updatedScene = scene;
 
     // Strategy objectStrategy = Strategy::MAX_ACCEL_LATE;
-    Strategy objectStrategy =Strategy::ACCEL_THEN_DECEL_LATE;
+    Strategy objectStrategy = Strategy::ACCEL_THEN_DECEL_LATE;
     EvolveScene(dt, &updatedScene,
                 /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 
@@ -55,8 +65,25 @@ int main(int argc, char *argv[]) {
     }
     maneuverProbabilities.timestamps.push_back(updatedScene.timestamp);
 
-    PlotInfo(before, info.intermediateParticles, resampled, observation,
-             trajectories, maneuverProbabilities);
+    // If not saving to file, display progress after each timestep.
+    if (!saveToFile) {
+      PlotInfo(before, info.intermediateParticles, resampled, observation,
+               trajectories, maneuverProbabilities);
+    } else {
+      particlesByTimestep.beforeParticles.push_back(before);
+      particlesByTimestep.intermediateParticles.push_back(
+          info.intermediateParticles);
+      particlesByTimestep.resampledParticles.push_back(resampled);
+    }
     scene = updatedScene;
+  }
+
+  if (saveToFile) {
+    std::ofstream particlesFile(particlesFileName);
+    if (!particlesFile.is_open()) {
+      std::cout << "failed to open file" << std::endl;
+      return -1;
+    }
+    WriteToFile(particlesByTimestep, particlesFile);
   }
 }

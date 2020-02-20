@@ -87,3 +87,8 @@ void TrajectoriesForPlotting::update(const Scene &scene) {
   objectTravels.push_back(scene.states.begin()->second.s);
   timestamps.push_back(scene.timestamp);
 }
+
+void WriteToFile(ParticlesByTimestep particlesByTimestep,
+                 std::ofstream &ofstream) {
+  // fill this in.
+}
