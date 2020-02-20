@@ -40,35 +40,70 @@ void PlotParticles(const std::vector<Scene> &particles,
 }
 
 struct TrajectoriesForPlotting {
-    std::vector<double> egoTravels;
-    std::vector<double> objectTravels;
-    std::vector<double> timestamps;
-    double criticalPointS;
+  std::vector<double> egoTravels;
+  std::vector<double> objectTravels;
+  std::vector<double> timestamps;
+  double criticalPointS;
 };
 
-void PlotTrajectories(const TrajectoriesForPlotting& trajectories) {
-    plt::xlabel("time");
-    plt::ylabel("travel");
-    plt::named_plot("ego trajectory", trajectories.timestamps, trajectories.egoTravels);
-    plt::named_plot("object trajectory", trajectories.timestamps, trajectories.objectTravels);
-    plt::named_plot("critical point", trajectories.timestamps, std::vector<double>(trajectories.egoTravels.size(), trajectories.criticalPointS));
-    plt::ylim(0.0, trajectories.criticalPointS + 20);
-    plt::legend();
+struct ManeuverProbabilitiesForPlotting {
+  ManeuverProbabilitiesForPlotting() : probabilities(Maneuver::NUM_MANEUVERS) {}
+  std::vector<std::vector<double>> probabilities;
+  std::vector<double> timestamps;
+};
+
+void PlotTrajectories(const TrajectoriesForPlotting &trajectories) {
+  plt::xlabel("time");
+  plt::ylabel("travel");
+  plt::named_plot("ego trajectory", trajectories.timestamps,
+                  trajectories.egoTravels);
+  plt::named_plot("object trajectory", trajectories.timestamps,
+                  trajectories.objectTravels);
+  plt::named_plot("critical point", trajectories.timestamps,
+                  std::vector<double>(trajectories.egoTravels.size(),
+                                      trajectories.criticalPointS));
+  plt::ylim(0.0, trajectories.criticalPointS + 20);
+  plt::legend();
+}
+
+void PlotManeuverProbabilities(
+    const ManeuverProbabilitiesForPlotting &maneuverProbabilities) {
+  for (const auto &probString : maneuverProbabilities.probabilities) {
+    for (const auto el : probString) {
+      std::cout << el << ",";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << "timestamps: " << std::endl;
+  for (const auto el : maneuverProbabilities.timestamps) {
+    std::cout << el << "," << std::endl;
+  }
+  plt::xlabel("time");
+  plt::ylabel("probability");
+  plt::named_plot("yielding", maneuverProbabilities.timestamps,
+                  maneuverProbabilities.probabilities[0]);
+  plt::named_plot("beating", maneuverProbabilities.timestamps,
+                  maneuverProbabilities.probabilities[1]);
+  plt::named_plot("ignoring", maneuverProbabilities.timestamps,
+                  maneuverProbabilities.probabilities[2]);
+  plt::legend();
 }
 
 void PlotInfo(const std::vector<Scene> &before,
-                     const std::vector<Scene> &expected,
-                     const std::vector<Scene> &resampled,
-              const State &observation,
-              const TrajectoriesForPlotting& trajectoriesSoFar) {
-  plt::subplot(2, 2, 1);
+              const std::vector<Scene> &intermediate,
+              const std::vector<Scene> &resampled, const State &observation,
+              const TrajectoriesForPlotting &trajectoriesSoFar,
+              const ManeuverProbabilitiesForPlotting &maneuverProbabilities) {
+  plt::subplot(2, 3, 1);
   PlotParticles(before, observation, "before");
-  plt::subplot(2, 2, 2);
-  PlotParticles(expected, observation, "expected");
-  plt::subplot(2, 2, 3);
+  plt::subplot(2, 3, 2);
+  PlotParticles(intermediate, observation, "intermediate");
+  plt::subplot(2, 3, 3);
   PlotParticles(resampled, observation, "resampled");
-  plt::subplot(2, 2, 4);
+  plt::subplot(2, 3, 4);
   PlotTrajectories(trajectoriesSoFar);
+  plt::subplot(2, 3, 5);
+  PlotManeuverProbabilities(maneuverProbabilities);
   plt::show();
 }
 
@@ -83,15 +118,16 @@ int main() {
   scene.criticalPointS = 200;
   scene.timestamp = 1.0;
 
-
   TrajectoriesForPlotting trajectories;
   trajectories.criticalPointS = scene.criticalPointS;
   trajectories.egoTravels.push_back(scene.egoState.s);
   trajectories.objectTravels.push_back(scene.states.begin()->second.s);
   trajectories.timestamps.push_back(scene.timestamp);
 
+  ManeuverProbabilitiesForPlotting maneuverProbabilities;
+
   pf.Init(scene);
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 20; ++i) {
     auto before = pf.GetParticles();
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we
@@ -102,7 +138,7 @@ int main() {
     EvolveState(dt, &updatedScene.states.at(123));
     updatedScene.timestamp = scene.timestamp + dt;
 
-    auto expected = pf.Update(updatedScene);
+    UpdateInfo info = pf.Update(updatedScene);
     auto resampled = pf.GetParticles();
     State &observation = updatedScene.states.begin()->second;
 
@@ -110,7 +146,14 @@ int main() {
     trajectories.objectTravels.push_back(updatedScene.states.begin()->second.s);
     trajectories.timestamps.push_back(updatedScene.timestamp);
 
-    PlotInfo(before, expected, resampled, observation, trajectories);
+    for (int i = 0; i < info.maneuverProbabilities.size(); i++) {
+      maneuverProbabilities.probabilities[i].push_back(
+          info.maneuverProbabilities[i]);
+    }
+    maneuverProbabilities.timestamps.push_back(updatedScene.timestamp);
+
+    PlotInfo(before, info.intermediateParticles, resampled, observation,
+             trajectories, maneuverProbabilities);
     scene = updatedScene;
   }
 }

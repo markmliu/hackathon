@@ -5,6 +5,12 @@
 
 #include "types.h"
 
+struct UpdateInfo {
+  // Particlese after action and before resampling
+  std::vector<Scene> intermediateParticles;
+  std::vector<double> maneuverProbabilities;
+};
+
 class ParticleFilter {
   // initialize it with particles set to observations
   // add random gaussian noise to them.
@@ -21,9 +27,7 @@ class ParticleFilter {
 public:
   ParticleFilter(int numParticles);
   void Init(const Scene &scene);
-  // Kind of a hack, return the particles after updating and before resampling
-  // for printing.
-  std::vector<Scene> Update(const Scene &scene);
+  UpdateInfo Update(const Scene &scene);
   std::vector<Scene> GetParticles() const;
   void PrintParticles();
   // exposed for testing.

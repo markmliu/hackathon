@@ -133,10 +133,11 @@ void ParticleFilter::PrintParticles() {
   }
 }
 
-std::vector<Scene> ParticleFilter::Update(const Scene &scene) {
+UpdateInfo ParticleFilter::Update(const Scene &scene) {
   // Assume we're stepping forward by dt.
   const double dt = 0.5;
-  std::cout << "scene timestamp: " << scene.timestamp << " current timestamp: " << current_timestamp_ << std::endl;
+  std::cout << "scene timestamp: " << scene.timestamp
+            << " current timestamp: " << current_timestamp_ << std::endl;
   assert(scene.timestamp == current_timestamp_ + dt);
   current_timestamp_ = scene.timestamp;
 
@@ -200,12 +201,14 @@ std::vector<Scene> ParticleFilter::Update(const Scene &scene) {
     maneuverCounter[m]++;
   }
 
-  // Show new maneuver likelihoods
+  std::swap(particles_, particlesResampled);
+
+  UpdateInfo info;
+  info.intermediateParticles = particlesResampled;
   for (int i = 0; i < Maneuver::NUM_MANEUVERS; ++i) {
-    std::cout << "maneuver : " << i << " has num particles "
-              << maneuverCounter[i] << std::endl;
+    info.maneuverProbabilities.push_back((double)maneuverCounter[i] /
+                                         numParticles_);
   }
 
-  std::swap(particles_, particlesResampled);
-  return particlesResampled;
+  return info;
 }
