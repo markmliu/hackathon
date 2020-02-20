@@ -25,14 +25,16 @@ int main() {
   ManeuverProbabilitiesForPlotting maneuverProbabilities;
 
   pf.Init(scene);
-  for (int i = 0; i < 20; ++i) {
+  while (scene.egoState.s < scene.criticalPointS + 20) {
     auto before = pf.GetParticles();
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we
     // are 15m closer to the critical point.
     double dt = 0.5;
     Scene updatedScene = scene;
-    EvolveScene(dt, &updatedScene);
+    EvolveScene(dt, &updatedScene,
+                /*egoStrategy=*/Strategy::CONSTANT_ACCEL,
+                /*objectStrategy=*/Strategy::MAX_ACCEL_LATE);
 
     UpdateInfo info = pf.Update(updatedScene);
     auto resampled = pf.GetParticles();
