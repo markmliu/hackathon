@@ -38,5 +38,5 @@ private:
 
   int numParticles_;
   std::vector<Scene> particles_;
-  int current_timestamp_;
+  double current_timestamp_;
 };

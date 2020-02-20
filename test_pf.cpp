@@ -7,7 +7,7 @@
 
 namespace plt = matplotlibcpp;
 
-const int NUM_PARTICLES = 500;
+const int NUM_PARTICLES = 5000;
 
 void PlotParticles(const std::vector<Scene> &particles,
                    const State &observation, const std::string &title) {
@@ -39,16 +39,36 @@ void PlotParticles(const std::vector<Scene> &particles,
   plt::title(title);
 }
 
-void PlotBeforeAfter(const std::vector<Scene> &before,
+struct TrajectoriesForPlotting {
+    std::vector<double> egoTravels;
+    std::vector<double> objectTravels;
+    std::vector<double> timestamps;
+    double criticalPointS;
+};
+
+void PlotTrajectories(const TrajectoriesForPlotting& trajectories) {
+    plt::xlabel("time");
+    plt::ylabel("travel");
+    plt::named_plot("ego trajectory", trajectories.timestamps, trajectories.egoTravels);
+    plt::named_plot("object trajectory", trajectories.timestamps, trajectories.objectTravels);
+    plt::named_plot("critical point", trajectories.timestamps, std::vector<double>(trajectories.egoTravels.size(), trajectories.criticalPointS));
+    plt::ylim(0.0, trajectories.criticalPointS + 20);
+    plt::legend();
+}
+
+void PlotInfo(const std::vector<Scene> &before,
                      const std::vector<Scene> &expected,
                      const std::vector<Scene> &resampled,
-                     const State &observation) {
+              const State &observation,
+              const TrajectoriesForPlotting& trajectoriesSoFar) {
   plt::subplot(2, 2, 1);
   PlotParticles(before, observation, "before");
   plt::subplot(2, 2, 2);
   PlotParticles(expected, observation, "expected");
   plt::subplot(2, 2, 3);
   PlotParticles(resampled, observation, "resampled");
+  plt::subplot(2, 2, 4);
+  PlotTrajectories(trajectoriesSoFar);
   plt::show();
 }
 
@@ -63,10 +83,16 @@ int main() {
   scene.criticalPointS = 200;
   scene.timestamp = 1.0;
 
+
+  TrajectoriesForPlotting trajectories;
+  trajectories.criticalPointS = scene.criticalPointS;
+  trajectories.egoTravels.push_back(scene.egoState.s);
+  trajectories.objectTravels.push_back(scene.states.begin()->second.s);
+  trajectories.timestamps.push_back(scene.timestamp);
+
   pf.Init(scene);
-  auto before = pf.GetParticles();
-  // what do our particles look like?
-  {
+  for (int i = 0; i < 5; ++i) {
+    auto before = pf.GetParticles();
     // Let's evolve the scene at a dt of 0.5
     // Assume the actor is in same relative position, but we
     // are 15m closer to the critical point.
@@ -74,11 +100,17 @@ int main() {
     Scene updatedScene = scene;
     EvolveState(dt, &updatedScene.egoState);
     EvolveState(dt, &updatedScene.states.at(123));
-    updatedScene.timestamp = 1.5;
+    updatedScene.timestamp = scene.timestamp + dt;
 
     auto expected = pf.Update(updatedScene);
     auto resampled = pf.GetParticles();
     State &observation = updatedScene.states.begin()->second;
-    PlotBeforeAfter(before, expected, resampled, observation);
+
+    trajectories.egoTravels.push_back(updatedScene.egoState.s);
+    trajectories.objectTravels.push_back(updatedScene.states.begin()->second.s);
+    trajectories.timestamps.push_back(updatedScene.timestamp);
+
+    PlotInfo(before, expected, resampled, observation, trajectories);
+    scene = updatedScene;
   }
 }

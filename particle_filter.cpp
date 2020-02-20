@@ -136,6 +136,7 @@ void ParticleFilter::PrintParticles() {
 std::vector<Scene> ParticleFilter::Update(const Scene &scene) {
   // Assume we're stepping forward by dt.
   const double dt = 0.5;
+  std::cout << "scene timestamp: " << scene.timestamp << " current timestamp: " << current_timestamp_ << std::endl;
   assert(scene.timestamp == current_timestamp_ + dt);
   current_timestamp_ = scene.timestamp;
 
