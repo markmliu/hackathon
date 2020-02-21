@@ -12,8 +12,9 @@ const int NUM_PARTICLES = 5000;
 
 namespace {
 void RunWithStrategy(const State &egoStartState, const State &objectStartState,
-                     Strategy objectStrategy, std::string fileNameHint) {
-  ParticleFilter pf(NUM_PARTICLES);
+                     Strategy objectStrategy, double objectAggressiveness,
+                     std::string fileNameHint) {
+  ParticleFilter pf(NUM_PARTICLES, objectAggressiveness);
   Scene scene(egoStartState);
 
   scene.states.emplace(/*objectId=*/123, objectStartState);
@@ -55,7 +56,8 @@ void RunWithStrategy(const State &egoStartState, const State &objectStartState,
 
     // If not saving to file, display progress after each timestep.
     PlotInfo(before, info.intermediateParticles, resampled, observation,
-             trajectories, maneuverProbabilities, fileNameHint);
+             trajectories, maneuverProbabilities, info.sampledAccelsByManeuver,
+             fileNameHint);
     scene = updatedScene;
   }
 }
@@ -64,11 +66,19 @@ void RunWithStrategy(const State &egoStartState, const State &objectStartState,
 int main() {
   RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
                   /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
-                  Strategy::CONSTANT_ACCEL, "stay_behind");
+                  Strategy::CONSTANT_ACCEL,
+                  /*objectAggressiveness=*/0.0, "stay_behind");
   RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
                   /*objectStartState=*/State(/*s=*/-20, /*v=*/20, /*a=*/0),
-                  Strategy::MAX_ACCEL_LATE, "speed_up_late");
+                  Strategy::MAX_ACCEL_LATE,
+                  /*objectAggressiveness=*/0.0, "speed_up_late");
   RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
                   /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
-                  Strategy::ACCEL_THEN_DECEL_LATE, "start_beating_then_yield");
+                  Strategy::ACCEL_THEN_DECEL_LATE,
+                  /*objectAggressiveness=*/0.0, "start_beating_then_yield");
+  // RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+  //                 /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
+  //                 Strategy::ACCEL_THEN_DECEL_LATE,
+  //                 /*objectAggressiveness=*/1.0,
+  //                 "start_beating_then_yield_aggressive");
 }

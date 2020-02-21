@@ -6,9 +6,13 @@
 #include "types.h"
 
 struct UpdateInfo {
+  UpdateInfo(int numParticles)
+      : maneuverProbabilities(Maneuver::NUM_MANEUVERS),
+        sampledAccelsByManeuver(Maneuver::NUM_MANEUVERS) {}
   // Particlese after action and before resampling
   std::vector<Scene> intermediateParticles;
   std::vector<double> maneuverProbabilities;
+  std::vector<std::vector<double>> sampledAccelsByManeuver;
 };
 
 class ParticleFilter {
@@ -25,7 +29,7 @@ class ParticleFilter {
   // - draw with replacement from x-bar.
   // This approximates our new X-bar.
 public:
-  ParticleFilter(int numParticles);
+  ParticleFilter(int numParticles, double objectAggressiveness);
   void Init(const Scene &scene);
   UpdateInfo Update(const Scene &scene);
   std::vector<Scene> GetParticles() const;
@@ -43,6 +47,8 @@ private:
   const int AccStdDev_ = 2; // m/s2
 
   int numParticles_;
+
+  double objectAggressiveness_;
   std::vector<Scene> particles_;
   double current_timestamp_;
 };

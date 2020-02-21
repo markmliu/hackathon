@@ -12,6 +12,7 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
                                            const State &objectState,
                                            const State &egoState,
                                            double criticalPointS,
+                                           double objectAggressiveness,
                                            double *maxAccel, double *minAccel) {
   // TODO: if object/ego are past the critical point, model is currently
   // incorrect
@@ -36,7 +37,8 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*actorDistanceToConflictPoint=*/criticalPointS - objectState.s,
             /*actorVelocity=*/objectState.v,
             /*egoDistanceToConflictPoint=*/criticalPointS - egoState.s,
-            /*egoVelocity=*/egoState.v));
+            /*egoVelocity=*/egoState.v,
+            /*aggressivenessTimePad=*/objectAggressiveness));
     *maxAccel = std::max(*maxAccel, *minAccel);
   }
   if (maneuver == Maneuver::IGNORING) {
@@ -45,6 +47,10 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
                                                         maxVehicleAccel));
     *minAccel = std::min(*minAccel, *maxAccel);
   }
+
+  // cap by vehicle capabilities again at the end.
+  *maxAccel = std::min(maxVehicleAccel, *maxAccel);
+  *minAccel = std::max(minVehicleAccel, *minAccel);
 }
 
 // Updates s to dt seconds later, assuming constant accel.
@@ -61,8 +67,9 @@ double pdf_gaussian(double x, double m, double s) {
 
 } // anonymous namespace
 
-ParticleFilter::ParticleFilter(int numParticles)
-    : numParticles_(numParticles) {}
+ParticleFilter::ParticleFilter(int numParticles, double objectAggressiveness)
+    : numParticles_(numParticles), objectAggressiveness_(objectAggressiveness) {
+}
 
 double ParticleFilter::RelativeLikelihood(State observation,
                                           State expectation) const {
@@ -101,6 +108,8 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
   // std dev used when sampling accel.
   const double accelSamplingStdDev = 1.0;
 
+  UpdateInfo updateInfo(numParticles_);
+
   // First step: predict particles forward only using model assumptions, without
   // looking at the observation..
 
@@ -111,15 +120,16 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
     // Vehicle max/min's which will be further bounded by maneuver intentions.
     double maxAccel = maxVehicleAccel;
     double minAccel = minVehicleAccel;
-    ApplyManeuverSpecificAccelConstraints(state.m, state, scene.egoState,
-                                          scene.criticalPointS, &maxAccel,
-                                          &minAccel);
+    ApplyManeuverSpecificAccelConstraints(
+        state.m, state, scene.egoState, scene.criticalPointS,
+        objectAggressiveness_, &maxAccel, &minAccel);
     double accelSamplingMean =
         std::min((maxAccel + minAccel) / 2, maxAccel - accelSamplingStdDev);
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
     ApplyAccel(sampledAccel, dt, &state);
+    updateInfo.sampledAccelsByManeuver[state.m].push_back(sampledAccel);
   }
 
   // Update weights - what's likelihood of seeing actual observation in either
@@ -167,14 +177,13 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
 
   std::swap(particles_, particlesResampled);
 
-  UpdateInfo info;
-  info.intermediateParticles = particlesResampled;
+  updateInfo.intermediateParticles = particlesResampled;
   for (int i = 0; i < Maneuver::NUM_MANEUVERS; ++i) {
-    info.maneuverProbabilities.push_back((double)maneuverCounter[i] /
-                                         numParticles_);
+    updateInfo.maneuverProbabilities[i] =
+        (double)maneuverCounter[i] / numParticles_;
   }
 
-  return info;
+  return updateInfo;
 }
 
 Scene ParticleFilter::SampleFromCurrentMeasurementDistribution(
