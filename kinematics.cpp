@@ -25,8 +25,12 @@ void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
     double accelToApply;
     if (currentTimestamp < 3.0) {
       accelToApply = 2.0;
+    } else if (currentTimestamp < 4.5) {
+      accelToApply = 1.0;
     } else if (currentTimestamp < 5.5) {
-      accelToApply = 0;
+      accelToApply = 0.0;
+    } else if (currentTimestamp < 6.5) {
+      accelToApply = -1.0;
     } else {
       accelToApply = -2.0;
     }

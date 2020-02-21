@@ -28,10 +28,11 @@ double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
 
 double getMinAccelInFrontOfEgoAtConflictRegion(
     double actorDistanceToConflictPoint, double actorVelocity,
-    double egoDistanceToConflictPoint, double egoVelocity) {
+    double egoDistanceToConflictPoint, double egoVelocity,
+    double aggressivenessTimePad) {
   double egoTimeToConflict = egoDistanceToConflictPoint / egoVelocity;
   // Pad by some amount to beat ego.
-  double actorTimeToConflict = egoTimeToConflict - 0.5;
+  double actorTimeToConflict = egoTimeToConflict - 0.5 + aggressivenessTimePad;
   return 2 * (actorDistanceToConflictPoint -
               (actorVelocity * actorTimeToConflict)) /
          (actorTimeToConflict * actorTimeToConflict);

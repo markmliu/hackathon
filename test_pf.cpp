@@ -2,6 +2,7 @@
 #include "particle_filter.h"
 #include "plotting.h"
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -10,15 +11,12 @@
 const int NUM_PARTICLES = 5000;
 
 namespace {
-void RunWithStrategy(Strategy objectStrategy, std::string fileNameHint) {
+void RunWithStrategy(const State &egoStartState, const State &objectStartState,
+                     Strategy objectStrategy, std::string fileNameHint) {
   ParticleFilter pf(NUM_PARTICLES);
-  Scene scene(State(/*s=*/0,
-                    /*v=*/20,
-                    /*a=*/0));
+  Scene scene(egoStartState);
 
-  scene.states.emplace(/*objectId=*/123, State(/*s=*/-20,
-                                               /*v=*/20,
-                                               /*a=*/0));
+  scene.states.emplace(/*objectId=*/123, objectStartState);
   scene.criticalPointS = 200;
   scene.timestamp = 1.0;
 
@@ -39,7 +37,11 @@ void RunWithStrategy(Strategy objectStrategy, std::string fileNameHint) {
     EvolveScene(dt, &updatedScene,
                 /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 
+    auto t0 = std::chrono::high_resolution_clock::now();
     UpdateInfo info = pf.Update(updatedScene);
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> inferenceTime = t1 - t0;
+    std::cout << "inference time: " << inferenceTime.count() << std::endl;
     auto resampled = pf.GetParticles();
     State &observation = updatedScene.states.begin()->second;
 
@@ -60,7 +62,13 @@ void RunWithStrategy(Strategy objectStrategy, std::string fileNameHint) {
 }
 
 int main() {
-  RunWithStrategy(Strategy::CONSTANT_ACCEL, "constant_accel");
-  RunWithStrategy(Strategy::MAX_ACCEL_LATE, "max_accel_late");
-  RunWithStrategy(Strategy::ACCEL_THEN_DECEL_LATE, "accel_then_decel_late");
+  RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+                  /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
+                  Strategy::CONSTANT_ACCEL, "stay_behind");
+  RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+                  /*objectStartState=*/State(/*s=*/-20, /*v=*/20, /*a=*/0),
+                  Strategy::MAX_ACCEL_LATE, "speed_up_late");
+  RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+                  /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
+                  Strategy::ACCEL_THEN_DECEL_LATE, "start_beating_then_yield");
 }

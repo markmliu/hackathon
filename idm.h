@@ -30,12 +30,15 @@ double getIDMAccelFreeRoad(double initialVelocity, double desiredVelocity,
 // - be at ego vehicle vel
 // - ego vehicle in front/behind plus some safe buffer
 // -
-// Actor wants to match velocity by critical point, with
+// aggressivenessTimePad can be used to tweak their expectation
+// If we want to model a driver who thinks we will yield to them,
+// set a higher aggressivenessTimePad
 // TODO: account for vehicle length
 
 double getMinAccelInFrontOfEgoAtConflictRegion(
     double actorDistanceToConflictPoint, double actorVelocity,
-    double egoDistanceToConflictPoint, double egoVelocity);
+    double egoDistanceToConflictPoint, double egoVelocity,
+    double aggressivenessTimePad = 0.0);
 
 double getMaxAccelBehindEgoAtConflictRegion(double actorDistanceToConflictPoint,
                                             double actorVelocity,

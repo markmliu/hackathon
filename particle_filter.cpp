@@ -27,6 +27,7 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
     *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
                                                         /*desiredVel=*/30,
                                                         maxVehicleAccel));
+    *minAccel = std::min(*minAccel, *maxAccel);
   }
   if (maneuver == Maneuver::BEATING) {
     *minAccel = std::max(
@@ -36,11 +37,13 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*actorVelocity=*/objectState.v,
             /*egoDistanceToConflictPoint=*/criticalPointS - egoState.s,
             /*egoVelocity=*/egoState.v));
+    *maxAccel = std::max(*maxAccel, *minAccel);
   }
   if (maneuver == Maneuver::IGNORING) {
     *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
                                                         /*desiredVel=*/30,
                                                         maxVehicleAccel));
+    *minAccel = std::min(*minAccel, *maxAccel);
   }
 }
 
