@@ -75,6 +75,10 @@ int main() {
                   Strategy::CONSTANT_ACCEL,
                   /*objectAggressiveness=*/0.0, "stay_behind");
   RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+                  /*objectStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0.5),
+                  Strategy::CONSTANT_ACCEL,
+                  /*objectAggressiveness=*/0.0, "go_infront");
+  RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
                   /*objectStartState=*/State(/*s=*/-20, /*v=*/20, /*a=*/0),
                   Strategy::MAX_ACCEL_LATE,
                   /*objectAggressiveness=*/0.0, "speed_up_late");
@@ -82,9 +86,9 @@ int main() {
                   /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
                   Strategy::ACCEL_THEN_DECEL_LATE,
                   /*objectAggressiveness=*/0.0, "start_beating_then_yield");
-  // RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
-  //                 /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
-  //                 Strategy::ACCEL_THEN_DECEL_LATE,
-  //                 /*objectAggressiveness=*/1.0,
-  //                 "start_beating_then_yield_aggressive");
+  RunWithStrategy(/*egoStartState=*/State(/*s=*/0, /*v=*/20, /*a=*/0),
+                  /*objectStartState=*/State(/*s=*/-30, /*v=*/20, /*a=*/0),
+                  Strategy::ACCEL_THEN_DECEL_LATE,
+                  /*objectAggressiveness=*/2.0,
+                  "start_beating_then_yield_aggressive");
 }

@@ -1,7 +1,7 @@
 #include <math.h>
 
-// Consider tuning.
-const int DELTA = 4;
+// Make this smaller because we expect more aggressive speedup
+const int DELTA = 3;
 
 double getIDMAccel(double initialVelocity, double distanceToPrecedingAgent,
                    double precedingAgentVelocity, double desiredVelocity,

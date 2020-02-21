@@ -26,7 +26,7 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*egoDistanceToConflictPoint=*/criticalPointS - egoState.s,
             /*egoVelocity=*/egoState.v));
     *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
-                                                        /*desiredVel=*/35,
+                                                        /*desiredVel=*/30,
                                                         maxVehicleAccel));
     *minAccel = std::min(*minAccel, *maxAccel);
   }
@@ -42,9 +42,10 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
     *maxAccel = std::max(*maxAccel, *minAccel);
   }
   if (maneuver == Maneuver::IGNORING) {
-    *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
-                                                        /*desiredVel=*/35,
-                                                        maxVehicleAccel));
+    double freeRoadAccel =
+        getIDMAccelFreeRoad(objectState.v,
+                            /*desiredVel=*/30, maxVehicleAccel);
+    *maxAccel = std::min(*maxAccel, freeRoadAccel);
     *minAccel = std::min(*minAccel, *maxAccel);
   }
 
@@ -54,6 +55,18 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
 
   *minAccel = std::min(maxVehicleAccel, *minAccel);
   *minAccel = std::max(minVehicleAccel, *minAccel);
+}
+
+double ChooseMeanForSampling(double minAccel, double maxAccel,
+                             double accelSamplingStdDev, Maneuver maneuver) {
+  if (maneuver == Maneuver::YIELDING) {
+    return maxAccel - accelSamplingStdDev;
+  } else if (maneuver == Maneuver::BEATING) {
+    return (maxAccel + minAccel) / 2;
+  } else {
+    // ignoring
+    return maxAccel - accelSamplingStdDev;
+  }
 }
 
 // Updates s to dt seconds later, assuming constant accel.
@@ -126,7 +139,10 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
     ApplyManeuverSpecificAccelConstraints(
         state.m, state, scene.egoState, scene.criticalPointS,
         objectAggressiveness_, &maxAccel, &minAccel);
-    double accelSamplingMean = maxAccel - accelSamplingStdDev;
+    // double accelSamplingMean = maxAccel - accelSamplingStdDev;
+    // double accelSamplingMean = (maxAccel + minAccel) / 2;
+    double accelSamplingMean =
+        ChooseMeanForSampling(minAccel, maxAccel, accelSamplingStdDev, state.m);
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
