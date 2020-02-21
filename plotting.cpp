@@ -45,7 +45,7 @@ void PlotTrajectories(const TrajectoriesForPlotting &trajectories) {
   plt::named_plot("critical point", trajectories.timestamps,
                   std::vector<double>(trajectories.egoTravels.size(),
                                       trajectories.criticalPointS));
-  plt::ylim(0.0, trajectories.criticalPointS + 20);
+  plt::ylim(-30.0, trajectories.criticalPointS + 20);
   plt::title("Trajectories");
   plt::legend();
 }
@@ -60,6 +60,7 @@ void PlotManeuverProbabilities(
                   maneuverProbabilities.probabilities[1], "g--");
   plt::named_plot("ignoring", maneuverProbabilities.timestamps,
                   maneuverProbabilities.probabilities[2], "k--");
+  plt::ylim(0.0, 1.0);
   plt::title("Maneuver probs");
   plt::legend();
 }

@@ -25,6 +25,12 @@ void RunWithStrategy(const State &egoStartState, const State &objectStartState,
   trajectories.update(scene);
 
   ManeuverProbabilitiesForPlotting maneuverProbabilities;
+  // even probabilities to start with
+  for (int i = 0; i < Maneuver::NUM_MANEUVERS; i++) {
+    maneuverProbabilities.probabilities[i].push_back(1.0 /
+                                                     Maneuver::NUM_MANEUVERS);
+  }
+  maneuverProbabilities.timestamps.push_back(scene.timestamp);
 
   pf.Init(scene);
   while (scene.egoState.s < scene.criticalPointS + 20) {

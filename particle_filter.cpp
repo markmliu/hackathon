@@ -5,7 +5,7 @@
 #include <iostream>
 
 const double maxVehicleAccel = 5.0;
-const double minVehicleAccel = 5.0;
+const double minVehicleAccel = -5.0;
 
 namespace {
 void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
@@ -26,7 +26,7 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
             /*egoDistanceToConflictPoint=*/criticalPointS - egoState.s,
             /*egoVelocity=*/egoState.v));
     *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
-                                                        /*desiredVel=*/30,
+                                                        /*desiredVel=*/35,
                                                         maxVehicleAccel));
     *minAccel = std::min(*minAccel, *maxAccel);
   }
@@ -43,13 +43,16 @@ void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
   }
   if (maneuver == Maneuver::IGNORING) {
     *maxAccel = std::min(*maxAccel, getIDMAccelFreeRoad(objectState.v,
-                                                        /*desiredVel=*/30,
+                                                        /*desiredVel=*/35,
                                                         maxVehicleAccel));
     *minAccel = std::min(*minAccel, *maxAccel);
   }
 
   // cap by vehicle capabilities again at the end.
   *maxAccel = std::min(maxVehicleAccel, *maxAccel);
+  *maxAccel = std::max(minVehicleAccel, *maxAccel);
+
+  *minAccel = std::min(maxVehicleAccel, *minAccel);
   *minAccel = std::max(minVehicleAccel, *minAccel);
 }
 
@@ -123,8 +126,7 @@ UpdateInfo ParticleFilter::Update(const Scene &scene) {
     ApplyManeuverSpecificAccelConstraints(
         state.m, state, scene.egoState, scene.criticalPointS,
         objectAggressiveness_, &maxAccel, &minAccel);
-    double accelSamplingMean =
-        std::min((maxAccel + minAccel) / 2, maxAccel - accelSamplingStdDev);
+    double accelSamplingMean = maxAccel - accelSamplingStdDev;
     std::normal_distribution<double> accDistribution(
         /*mean=*/accelSamplingMean, /*stdDev=*/accelSamplingStdDev);
     double sampledAccel = accDistribution(generator_);
