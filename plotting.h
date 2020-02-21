@@ -7,7 +7,9 @@
 struct TrajectoriesForPlotting {
   TrajectoriesForPlotting(double criticalPointS_);
   std::vector<double> egoTravels;
+  std::vector<double> egoVelocities;
   std::vector<double> objectTravels;
+  std::vector<double> objectVelocities;
   std::vector<double> timestamps;
   double criticalPointS;
   void update(const Scene &scene);
@@ -30,6 +32,12 @@ struct ParticlesByTimestep {
   std::vector<std::vector<Scene>> beforeParticles;
   std::vector<std::vector<Scene>> intermediateParticles;
   std::vector<std::vector<Scene>> resampledParticles;
+
+  std::vector<double> timesteps;
 };
 
-void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file);
+void WriteParticlesToFile(ParticlesByTimestep particlesByTimestep,
+                          std::ofstream &file);
+
+void WriteTrajectoriesToFile(TrajectoriesForPlotting trajectories,
+                             std::ofstream &file);

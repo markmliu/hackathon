@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   std::string maneuverProbsFileName;
   if (saveToFile) {
     particlesFileName = argv[1];
-    // trajectoriesFileName = argv[2];
+    trajectoriesFileName = argv[2];
     // maneuverProbsFileName = argv[3];
     std::cout << "todo: save to file!" << std::endl;
   }
@@ -75,16 +75,19 @@ int main(int argc, char *argv[]) {
       particlesByTimestep.intermediateParticles.push_back(
           info.intermediateParticles);
       particlesByTimestep.resampledParticles.push_back(resampled);
+      particlesByTimestep.timesteps.push_back(updatedScene.timestamp);
     }
     scene = updatedScene;
   }
 
   if (saveToFile) {
     std::ofstream particlesFile(particlesFileName);
+    std::ofstream trajectoriesFile(trajectoriesFileName);
     if (!particlesFile.is_open()) {
       std::cout << "failed to open file" << std::endl;
       return -1;
     }
-    WriteToFile(particlesByTimestep, particlesFile);
+    WriteParticlesToFile(particlesByTimestep, particlesFile);
+    WriteTrajectoriesToFile(trajectories, trajectoriesFile);
   }
 }

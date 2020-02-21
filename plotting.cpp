@@ -78,7 +78,12 @@ void PlotInfo(const std::vector<Scene> &before,
   PlotTrajectories(trajectoriesSoFar);
   plt::subplot(2, 3, 5);
   PlotManeuverProbabilities(maneuverProbabilities);
-  plt::show();
+  // plt::show();
+  // hack - get the current timestep from somewhere
+  std::string filename =
+      "fig" + std::to_string(trajectoriesSoFar.timestamps.size()) + ".png";
+  plt::save(filename);
+  plt::clf();
 }
 
 TrajectoriesForPlotting::TrajectoriesForPlotting(double criticalPointS_)
@@ -86,13 +91,16 @@ TrajectoriesForPlotting::TrajectoriesForPlotting(double criticalPointS_)
 
 void TrajectoriesForPlotting::update(const Scene &scene) {
   egoTravels.push_back(scene.egoState.s);
+  egoVelocities.push_back(scene.egoState.v);
   objectTravels.push_back(scene.states.begin()->second.s);
+  objectVelocities.push_back(scene.states.begin()->second.v);
   timestamps.push_back(scene.timestamp);
 }
 
-void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file) {
+void WriteParticlesToFile(ParticlesByTimestep particlesByTimestep,
+                          std::ofstream &file) {
   for (int i = 0; i < particlesByTimestep.beforeParticles.size(); ++i) {
-    // timestep i
+    double timestep = particlesByTimestep.timesteps[i];
     int dist_i = 0;
     for (const auto &dist : {particlesByTimestep.beforeParticles,
                              particlesByTimestep.intermediateParticles,
@@ -100,7 +108,7 @@ void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file) {
       for (const auto &particle : dist[i]) {
         auto &particleState = particle.states.begin()->second;
         // timestep, s, v, m, before/intermediate/resampled
-        file << i << ",";
+        file << timestep << ",";
         file << particleState.s << ",";
         file << particleState.v << ",";
         file << particleState.m << ",";
@@ -108,6 +116,19 @@ void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file) {
       }
       dist_i++;
     }
+  }
+  file.close();
+}
+
+void WriteTrajectoriesToFile(TrajectoriesForPlotting trajectories,
+                             std::ofstream &file) {
+  // write the travel velocity pairs out
+  for (int i = 0; i < trajectories.egoTravels.size(); ++i) {
+    // ego travel, ego vel, object travel, object vel
+    file << trajectories.egoTravels[i] << ",";
+    file << trajectories.egoVelocities[i] << ",";
+    file << trajectories.objectTravels[i] << ",";
+    file << trajectories.objectVelocities[i] << std::endl;
   }
   file.close();
 }

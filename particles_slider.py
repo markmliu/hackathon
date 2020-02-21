@@ -5,6 +5,7 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 import csv
 
 particle_data = {}
+trajectory_data = {}
 
 def main():
     # key is timestamp
@@ -26,6 +27,19 @@ def main():
                 particle_data[t][dist][m] = []
             particle_data[t][dist][m].append((s,v))
 
+    # ego_s = []
+    # ego_v = []
+    # obj_s = []
+    # obj_v = []
+    # with open("trajectories.csv") as csvfile:
+    #     reader = csv.reader(csvfile)
+    #     for row in reader:
+    #         ego_s.append(float(row[0]))
+    #         ego_v.append(float(row[1]))
+    #         obj_s.append(float(row[2]))
+    #         obj_v.append(float(row[3]))
+
+
     fig, ax = plt.subplots()
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
@@ -42,6 +56,11 @@ def main():
     scat2 = plt.scatter([el[0] for el in particle_data[1.5][distToPlot][2]],
                         [el[1] for el in particle_data[1.5][distToPlot][2]],
                         s=3.0)
+
+    # these plots are fixed and wont move with slider
+    # these don't quite look right.
+    # plt.plot(ego_s, ego_v)
+    # plt.plot(obj_s, obj_v)
 
     ax.margins(x=0)
 
@@ -76,6 +95,7 @@ def main():
 
     time.on_changed(update)
 
+    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
