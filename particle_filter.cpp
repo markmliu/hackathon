@@ -4,39 +4,10 @@
 #include <assert.h>
 #include <iostream>
 
-const double maxVehicleAccel = 3.0;
-const double minVehicleAccel = 3.0;
+const double maxVehicleAccel = 5.0;
+const double minVehicleAccel = 5.0;
 
 namespace {
-
-// Return the kinematic means for each maneuver.
-std::vector<State> GetManeuverMeanStates(const std::vector<Scene> &particles,
-                                         int numManeuvers) {
-
-  std::vector<int> maneuverCount(numManeuvers, 0);
-
-  // Assume only one object
-  assert(particles.size() != 0);
-  assert(particles[0].states.size() != 0);
-  ObjectId objectId = particles[0].states.begin()->first;
-
-  std::vector<State> meanManeuverStates(numManeuvers, State(0, 0, 0));
-
-  for (const auto &particle : particles) {
-    const auto &state = particle.states.at(objectId);
-    int maneuver = state.m;
-    maneuverCount[maneuver]++;
-    int n = maneuverCount[maneuver];
-    meanManeuverStates[maneuver].s +=
-        (state.s - meanManeuverStates[maneuver].s) / n;
-    meanManeuverStates[maneuver].v +=
-        (state.v - meanManeuverStates[maneuver].v) / n;
-    // meanManeuverStates[maneuver].a +=
-    //     (state.a - meanManeuverStates[maneuver].a) / n;
-  }
-  return meanManeuverStates;
-}
-
 void ApplyManeuverSpecificAccelConstraints(Maneuver maneuver,
                                            const State &objectState,
                                            const State &egoState,

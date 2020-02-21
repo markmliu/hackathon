@@ -49,7 +49,8 @@ int main(int argc, char *argv[]) {
     Scene updatedScene = scene;
 
     // Strategy objectStrategy = Strategy::MAX_ACCEL_LATE;
-    Strategy objectStrategy = Strategy::ACCEL_THEN_DECEL_LATE;
+    // Strategy objectStrategy = Strategy::ACCEL_THEN_DECEL_LATE;
+    Strategy objectStrategy = Strategy::CONSTANT_ACCEL;
     EvolveScene(dt, &updatedScene,
                 /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 

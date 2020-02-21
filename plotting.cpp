@@ -90,5 +90,7 @@ void TrajectoriesForPlotting::update(const Scene &scene) {
 
 void WriteToFile(ParticlesByTimestep particlesByTimestep,
                  std::ofstream &ofstream) {
-  // fill this in.
+  for (int i = 0; i < particlesByTimestep.beforeParticles.size(); ++i) {
+      // timestep i
+  }
 }
