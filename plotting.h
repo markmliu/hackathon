@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "types.h"
 
@@ -25,7 +26,8 @@ void PlotInfo(const std::vector<Scene> &before,
               const std::vector<Scene> &intermediate,
               const std::vector<Scene> &resampled, const State &observation,
               const TrajectoriesForPlotting &trajectoriesSoFar,
-              const ManeuverProbabilitiesForPlotting &maneuverProbabilities);
+              const ManeuverProbabilitiesForPlotting &maneuverProbabilities,
+              const std::string& strategyName);
 
 // Utils for writing files should probably go somewhere else.
 struct ParticlesByTimestep {

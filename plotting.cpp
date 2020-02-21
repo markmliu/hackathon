@@ -67,7 +67,8 @@ void PlotInfo(const std::vector<Scene> &before,
               const std::vector<Scene> &intermediate,
               const std::vector<Scene> &resampled, const State &observation,
               const TrajectoriesForPlotting &trajectoriesSoFar,
-              const ManeuverProbabilitiesForPlotting &maneuverProbabilities) {
+              const ManeuverProbabilitiesForPlotting &maneuverProbabilities,
+              const std::string& strategyName) {
   plt::subplot(2, 3, 1);
   PlotParticles(before, observation, "before");
   plt::subplot(2, 3, 2);
@@ -81,7 +82,7 @@ void PlotInfo(const std::vector<Scene> &before,
   // plt::show();
   // hack - get the current timestep from somewhere
   std::string filename =
-      "fig" + std::to_string(trajectoriesSoFar.timestamps.size()) + ".png";
+      "figs/fig" + strategyName + std::to_string(trajectoriesSoFar.timestamps.size()) + ".png";
   plt::save(filename);
   plt::clf();
 }

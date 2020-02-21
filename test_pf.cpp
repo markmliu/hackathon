@@ -9,20 +9,8 @@
 
 const int NUM_PARTICLES = 5000;
 
-int main(int argc, char *argv[]) {
-  // See if we need to save info out
-  bool saveToFile = argc >= 2;
-  std::string particlesFileName;
-  std::string trajectoriesFileName;
-  std::string maneuverProbsFileName;
-  if (saveToFile) {
-    particlesFileName = argv[1];
-    trajectoriesFileName = argv[2];
-    // maneuverProbsFileName = argv[3];
-    std::cout << "todo: save to file!" << std::endl;
-  }
-  ParticlesByTimestep particlesByTimestep;
-
+namespace {
+void RunWithStrategy(Strategy objectStrategy, std::string strategyName) {
   ParticleFilter pf(NUM_PARTICLES);
   Scene scene(State(/*s=*/0,
                     /*v=*/20,
@@ -48,9 +36,6 @@ int main(int argc, char *argv[]) {
     double dt = 0.5;
     Scene updatedScene = scene;
 
-    // Strategy objectStrategy = Strategy::MAX_ACCEL_LATE;
-    // Strategy objectStrategy = Strategy::ACCEL_THEN_DECEL_LATE;
-    Strategy objectStrategy = Strategy::CONSTANT_ACCEL;
     EvolveScene(dt, &updatedScene,
                 /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 
@@ -67,27 +52,15 @@ int main(int argc, char *argv[]) {
     maneuverProbabilities.timestamps.push_back(updatedScene.timestamp);
 
     // If not saving to file, display progress after each timestep.
-    if (!saveToFile) {
-      PlotInfo(before, info.intermediateParticles, resampled, observation,
-               trajectories, maneuverProbabilities);
-    } else {
-      particlesByTimestep.beforeParticles.push_back(before);
-      particlesByTimestep.intermediateParticles.push_back(
-          info.intermediateParticles);
-      particlesByTimestep.resampledParticles.push_back(resampled);
-      particlesByTimestep.timesteps.push_back(updatedScene.timestamp);
-    }
+    PlotInfo(before, info.intermediateParticles, resampled, observation,
+             trajectories, maneuverProbabilities, strategyName);
     scene = updatedScene;
   }
+}
+}
 
-  if (saveToFile) {
-    std::ofstream particlesFile(particlesFileName);
-    std::ofstream trajectoriesFile(trajectoriesFileName);
-    if (!particlesFile.is_open()) {
-      std::cout << "failed to open file" << std::endl;
-      return -1;
-    }
-    WriteParticlesToFile(particlesByTimestep, particlesFile);
-    WriteTrajectoriesToFile(trajectories, trajectoriesFile);
-  }
+int main() {
+    RunWithStrategy(Strategy::CONSTANT_ACCEL, "constant_accel");
+    RunWithStrategy(Strategy::MAX_ACCEL_LATE, "max_accel_late");
+    RunWithStrategy(Strategy::ACCEL_THEN_DECEL_LATE, "max_accel_late");
 }
