@@ -32,5 +32,4 @@ struct ParticlesByTimestep {
   std::vector<std::vector<Scene>> resampledParticles;
 };
 
-void WriteToFile(ParticlesByTimestep particlesByTimestep,
-                 std::ofstream &ofstream);
+void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file);

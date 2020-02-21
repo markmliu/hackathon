@@ -61,10 +61,6 @@ double pdf_gaussian(double x, double m, double s) {
 ParticleFilter::ParticleFilter(int numParticles)
     : numParticles_(numParticles) {}
 
-std::vector<State> ParticleFilter::GetMeanStates() const {
-  return GetManeuverMeanStates(particles_, Maneuver::NUM_MANEUVERS);
-}
-
 double ParticleFilter::RelativeLikelihood(State observation,
                                           State expectation) const {
   return pdf_gaussian(observation.s, expectation.s, PosStdDev_) *

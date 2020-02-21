@@ -11,14 +11,14 @@ const int NUM_PARTICLES = 5000;
 
 int main(int argc, char *argv[]) {
   // See if we need to save info out
-  bool saveToFile = argc >= 4;
+  bool saveToFile = argc >= 2;
   std::string particlesFileName;
   std::string trajectoriesFileName;
   std::string maneuverProbsFileName;
   if (saveToFile) {
     particlesFileName = argv[1];
-    trajectoriesFileName = argv[2];
-    maneuverProbsFileName = argv[3];
+    // trajectoriesFileName = argv[2];
+    // maneuverProbsFileName = argv[3];
     std::cout << "todo: save to file!" << std::endl;
   }
   ParticlesByTimestep particlesByTimestep;

@@ -1,6 +1,8 @@
 #include "plotting.h"
 #include "matplotlibcpp.h"
 
+#include <fstream>
+
 namespace plt = matplotlibcpp;
 
 namespace {
@@ -88,9 +90,24 @@ void TrajectoriesForPlotting::update(const Scene &scene) {
   timestamps.push_back(scene.timestamp);
 }
 
-void WriteToFile(ParticlesByTimestep particlesByTimestep,
-                 std::ofstream &ofstream) {
+void WriteToFile(ParticlesByTimestep particlesByTimestep, std::ofstream &file) {
   for (int i = 0; i < particlesByTimestep.beforeParticles.size(); ++i) {
-      // timestep i
+    // timestep i
+    int dist_i = 0;
+    for (const auto &dist : {particlesByTimestep.beforeParticles,
+                             particlesByTimestep.intermediateParticles,
+                             particlesByTimestep.resampledParticles}) {
+      for (const auto &particle : dist[i]) {
+        auto &particleState = particle.states.begin()->second;
+        // timestep, s, v, m, before/intermediate/resampled
+        file << i << ",";
+        file << particleState.s << ",";
+        file << particleState.v << ",";
+        file << particleState.m << ",";
+        file << dist_i << std::endl;
+      }
+      dist_i++;
+    }
   }
+  file.close();
 }
