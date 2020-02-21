@@ -66,12 +66,15 @@ void PlotManeuverProbabilities(
 }
 
 void PlotSampledAccels(
-    const std::vector<std::vector<double>> &sampledAccelsByManeuver) {
+    const std::vector<std::vector<double>> &sampledAccelsByManeuver,
+    double observedAccel) {
   plt::xlabel("accel");
   plt::ylabel("pmf");
   plt::named_hist("yielding", sampledAccelsByManeuver[0], 10, "r", 0.5);
   plt::named_hist("beating", sampledAccelsByManeuver[1], 10, "g", 0.5);
   plt::named_hist("ignoring", sampledAccelsByManeuver[2], 10, "k", 0.5);
+  plt::scatter(std::vector<double>({observedAccel}), std::vector<double>({0}),
+               /*markerSize=*/20.0);
   plt::title("Sampled accels");
   plt::legend();
 }
@@ -83,7 +86,7 @@ void PlotInfo(const std::vector<Scene> &before,
               const TrajectoriesForPlotting &trajectoriesSoFar,
               const ManeuverProbabilitiesForPlotting &maneuverProbabilities,
               const std::vector<std::vector<double>> &sampledAccelsByManeuver,
-              const std::string &strategyName) {
+              double observedAccel, const std::string &strategyName) {
   plt::subplot(2, 3, 1);
   PlotParticles(before, observation, "before");
   plt::subplot(2, 3, 2);
@@ -95,7 +98,7 @@ void PlotInfo(const std::vector<Scene> &before,
   plt::subplot(2, 3, 5);
   PlotManeuverProbabilities(maneuverProbabilities);
   plt::subplot(2, 3, 6);
-  PlotSampledAccels(sampledAccelsByManeuver);
+  PlotSampledAccels(sampledAccelsByManeuver, observedAccel);
 
   std::map<std::string, double> options = {{"hspace", 0.5}, {"wspace", 0.5}};
   plt::subplots_adjust(options);

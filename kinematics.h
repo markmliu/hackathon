@@ -12,6 +12,8 @@ enum Strategy {
 };
 
 void EvolveState(double dt, State *state);
-void EvolveScene(double dt, Scene *scene,
-                 Strategy egoStrategy = Strategy::CONSTANT_ACCEL,
-                 Strategy objectStrategy = Strategy::CONSTANT_ACCEL);
+
+// returns actual object accel
+double EvolveScene(double dt, Scene *scene,
+                   Strategy egoStrategy = Strategy::CONSTANT_ACCEL,
+                   Strategy objectStrategy = Strategy::CONSTANT_ACCEL);

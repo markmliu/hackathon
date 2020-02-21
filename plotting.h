@@ -28,7 +28,7 @@ void PlotInfo(const std::vector<Scene> &before,
               const TrajectoriesForPlotting &trajectoriesSoFar,
               const ManeuverProbabilitiesForPlotting &maneuverProbabilities,
               const std::vector<std::vector<double>> &sampledAccelsByManeuver,
-              const std::string &strategyName);
+              double observedAccel, const std::string &strategyName);
 
 // Utils for writing files should probably go somewhere else.
 struct ParticlesByTimestep {

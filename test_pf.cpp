@@ -41,8 +41,9 @@ void RunWithStrategy(const State &egoStartState, const State &objectStartState,
     double dt = 0.5;
     Scene updatedScene = scene;
 
-    EvolveScene(dt, &updatedScene,
-                /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
+    double observedAccel =
+        EvolveScene(dt, &updatedScene,
+                    /*egoStrategy=*/Strategy::CONSTANT_ACCEL, objectStrategy);
 
     auto t0 = std::chrono::high_resolution_clock::now();
     UpdateInfo info = pf.Update(updatedScene);
@@ -63,7 +64,7 @@ void RunWithStrategy(const State &egoStartState, const State &objectStartState,
     // If not saving to file, display progress after each timestep.
     PlotInfo(before, info.intermediateParticles, resampled, observation,
              trajectories, maneuverProbabilities, info.sampledAccelsByManeuver,
-             fileNameHint);
+             observedAccel, fileNameHint);
     scene = updatedScene;
   }
 }

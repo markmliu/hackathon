@@ -3,10 +3,10 @@
 #include <iostream>
 
 namespace {
-void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
+double ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
   if (strategy == Strategy::CONSTANT_ACCEL) {
     // do nothing
-    return;
+    return state->a;
   } else if (strategy == Strategy::MAX_ACCEL_LATE) {
     // constant time for now
     const double LATE_TIME = 5.0;
@@ -14,13 +14,13 @@ void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
     const double MAX_SPEED = 35;
 
     if (currentTimestamp < LATE_TIME) {
-      return;
+      return state->a;
     }
 
     double accelToApply = std::min(MAX_ACCEL, MAX_SPEED - state->v);
     state->a = accelToApply;
     std::cout << "acceling up to " << state->a << std::endl;
-    return;
+    return state->a;
   } else if (strategy == Strategy::ACCEL_THEN_DECEL_LATE) {
     double accelToApply;
     if (currentTimestamp < 3.0) {
@@ -35,7 +35,7 @@ void ApplyStrategy(Strategy strategy, State *state, double currentTimestamp) {
       accelToApply = -2.0;
     }
     state->a = accelToApply;
-    return;
+    return state->a;
   }
 }
 } // anonymous namespace
@@ -44,12 +44,13 @@ void EvolveState(double dt, State *state) {
   state->v += state->a * dt;
 }
 
-void EvolveScene(double dt, Scene *scene, Strategy egoStrategy,
-                 Strategy objectStrategy) {
+double EvolveScene(double dt, Scene *scene, Strategy egoStrategy,
+                   Strategy objectStrategy) {
   ApplyStrategy(egoStrategy, &scene->egoState, scene->timestamp);
-  ApplyStrategy(objectStrategy, &scene->states.begin()->second,
-                scene->timestamp);
+  double objectAccel = ApplyStrategy(
+      objectStrategy, &scene->states.begin()->second, scene->timestamp);
   EvolveState(dt, &scene->egoState);
   EvolveState(dt, &scene->states.begin()->second);
   scene->timestamp += dt;
+  return objectAccel;
 }
