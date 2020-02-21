@@ -10,7 +10,7 @@
 const int NUM_PARTICLES = 5000;
 
 namespace {
-void RunWithStrategy(Strategy objectStrategy, std::string strategyName) {
+void RunWithStrategy(Strategy objectStrategy, std::string fileNameHint) {
   ParticleFilter pf(NUM_PARTICLES);
   Scene scene(State(/*s=*/0,
                     /*v=*/20,
@@ -53,14 +53,14 @@ void RunWithStrategy(Strategy objectStrategy, std::string strategyName) {
 
     // If not saving to file, display progress after each timestep.
     PlotInfo(before, info.intermediateParticles, resampled, observation,
-             trajectories, maneuverProbabilities, strategyName);
+             trajectories, maneuverProbabilities, fileNameHint);
     scene = updatedScene;
   }
 }
 }
 
 int main() {
-    RunWithStrategy(Strategy::CONSTANT_ACCEL, "constant_accel");
-    RunWithStrategy(Strategy::MAX_ACCEL_LATE, "max_accel_late");
-    RunWithStrategy(Strategy::ACCEL_THEN_DECEL_LATE, "max_accel_late");
+  RunWithStrategy(Strategy::CONSTANT_ACCEL, "constant_accel");
+  RunWithStrategy(Strategy::MAX_ACCEL_LATE, "max_accel_late");
+  RunWithStrategy(Strategy::ACCEL_THEN_DECEL_LATE, "accel_then_decel_late");
 }

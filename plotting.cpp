@@ -46,6 +46,7 @@ void PlotTrajectories(const TrajectoriesForPlotting &trajectories) {
                   std::vector<double>(trajectories.egoTravels.size(),
                                       trajectories.criticalPointS));
   plt::ylim(0.0, trajectories.criticalPointS + 20);
+  plt::title("Trajectories");
   plt::legend();
 }
 
@@ -59,6 +60,7 @@ void PlotManeuverProbabilities(
                   maneuverProbabilities.probabilities[1], "g--");
   plt::named_plot("ignoring", maneuverProbabilities.timestamps,
                   maneuverProbabilities.probabilities[2], "k--");
+  plt::title("Maneuver probabilities");
   plt::legend();
 }
 }
@@ -68,7 +70,7 @@ void PlotInfo(const std::vector<Scene> &before,
               const std::vector<Scene> &resampled, const State &observation,
               const TrajectoriesForPlotting &trajectoriesSoFar,
               const ManeuverProbabilitiesForPlotting &maneuverProbabilities,
-              const std::string& strategyName) {
+              const std::string &strategyName) {
   plt::subplot(2, 3, 1);
   PlotParticles(before, observation, "before");
   plt::subplot(2, 3, 2);
@@ -79,10 +81,13 @@ void PlotInfo(const std::vector<Scene> &before,
   PlotTrajectories(trajectoriesSoFar);
   plt::subplot(2, 3, 5);
   PlotManeuverProbabilities(maneuverProbabilities);
+  std::map<std::string, double> options = {{"hspace", 0.5}, {"wspace", 0.5}};
+  plt::subplots_adjust(options);
   // plt::show();
   // hack - get the current timestep from somewhere
-  std::string filename =
-      "figs/fig" + strategyName + std::to_string(trajectoriesSoFar.timestamps.size()) + ".png";
+  std::string filename = "figs/fig" + strategyName +
+                         std::to_string(trajectoriesSoFar.timestamps.size()) +
+                         ".png";
   plt::save(filename);
   plt::clf();
 }
