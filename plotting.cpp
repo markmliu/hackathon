@@ -69,7 +69,7 @@ void PlotSampledAccels(
     const std::vector<std::vector<double>> &sampledAccelsByManeuver,
     double observedAccel) {
   plt::xlabel("accel");
-  plt::ylabel("pmf");
+  plt::ylabel("count");
   plt::named_hist("yielding", sampledAccelsByManeuver[0], 10, "r", 0.5);
   plt::named_hist("beating", sampledAccelsByManeuver[1], 10, "g", 0.5);
   plt::named_hist("ignoring", sampledAccelsByManeuver[2], 10, "k", 0.5);
