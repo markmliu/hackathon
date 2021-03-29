@@ -1,7 +1,7 @@
 ### Description
 
 This repository implements a simplified version of [Interaction-Aware Probabilistic Behavior Prediction in Urban Environments](https://arxiv.org/pdf/1804.10467.pdf), with some tools for visualizing.
-
+![](speed_up_late.gif)
 
 ### Instructions
 
