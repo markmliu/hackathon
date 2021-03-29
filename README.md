@@ -1,7 +1,9 @@
 ### Description
 
-This repository implements a simplified version of [Interaction-Aware Probabilistic Behavior Prediction in Urban Environments](https://arxiv.org/pdf/1804.10467.pdf), with some tools for visualizing. There is an accompanying [Medium post](https://markmliu.medium.com/whats-under-the-hood-5c1d83986039) which gives a high-level overview of the paper and code.
 ![](speed_up_late.gif)
+
+This repository implements a simplified version of [Interaction-Aware Probabilistic Behavior Prediction in Urban Environments](https://arxiv.org/pdf/1804.10467.pdf), with some tools for visualizing. There is an accompanying [Medium post](https://markmliu.medium.com/whats-under-the-hood-5c1d83986039) which gives a high-level overview of the paper and code.
+
 
 ### Instructions
 
